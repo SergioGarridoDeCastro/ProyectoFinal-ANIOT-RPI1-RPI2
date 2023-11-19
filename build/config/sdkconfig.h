@@ -227,6 +227,12 @@
 #define CONFIG_PARTITION_TABLE_FILENAME "partitions_singleapp.csv"
 #define CONFIG_PARTITION_TABLE_OFFSET 0x8000
 #define CONFIG_PARTITION_TABLE_MD5 1
+#define CONFIG_BROKER_URL "mqtt://mqtt.eclipseprojects.io"
+#define CONFIG_MQTT_USERNAME "mqtt_username"
+#define CONFIG_MQTT_PASSWORD "mqtt_password"
+#define CONFIG_ESP_WIFI_SSID "myssid"
+#define CONFIG_ESP_WIFI_PASSWORD "mypassword"
+#define CONFIG_ESP_MAXIMUM_RETRY 5
 #define CONFIG_ENV_GPIO_RANGE_MIN 0
 #define CONFIG_ENV_GPIO_RANGE_MAX 39
 #define CONFIG_ENV_GPIO_IN_RANGE_MAX 39

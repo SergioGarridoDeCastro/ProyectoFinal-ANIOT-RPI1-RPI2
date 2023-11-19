@@ -4024,6 +4024,84 @@
             {
                 "children": [],
                 "depends_on": null,
+                "help": "URL of the broker to connect to",
+                "id": "BROKER_URL",
+                "name": "BROKER_URL",
+                "range": null,
+                "title": "Broker URL",
+                "type": "string"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": null,
+                "id": "BROKER_URL_FROM_STDIN",
+                "name": "BROKER_URL_FROM_STDIN",
+                "range": null,
+                "title": null,
+                "type": "bool"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "Username to use in MQTT",
+                "id": "MQTT_USERNAME",
+                "name": "MQTT_USERNAME",
+                "range": null,
+                "title": "MQTT Username",
+                "type": "string"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "Password to use in MQTT",
+                "id": "MQTT_PASSWORD",
+                "name": "MQTT_PASSWORD",
+                "range": null,
+                "title": "MQTT Password",
+                "type": "string"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "SSID (network name) to connect to.",
+                "id": "ESP_WIFI_SSID",
+                "name": "ESP_WIFI_SSID",
+                "range": null,
+                "title": "WiFi SSID",
+                "type": "string"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "WiFi password (WPA2) to use.",
+                "id": "ESP_WIFI_PASSWORD",
+                "name": "ESP_WIFI_PASSWORD",
+                "range": null,
+                "title": "WiFi Password",
+                "type": "string"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "Set the Maximum retry to avoid station reconnecting to the AP unlimited when the AP is really inexistent.",
+                "id": "ESP_MAXIMUM_RETRY",
+                "name": "ESP_MAXIMUM_RETRY",
+                "range": null,
+                "title": "Maximum Retry",
+                "type": "int"
+            }
+        ],
+        "depends_on": null,
+        "id": "project-configuration",
+        "title": "Project Configuration",
+        "type": "menu"
+    },
+    {
+        "children": [
+            {
+                "children": [],
+                "depends_on": null,
                 "help": null,
                 "id": "ENV_GPIO_RANGE_MIN",
                 "name": "ENV_GPIO_RANGE_MIN",
@@ -4619,6 +4697,24 @@
         "depends_on": null,
         "id": "example-connection-configuration",
         "title": "Example Connection Configuration",
+        "type": "menu"
+    },
+    {
+        "children": [
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "If enabled, use Hold Master Mode (use clock stretching). Otherwise,\nuse No Hold Master Mode (don't acknowledge read requests).",
+                "id": "USE_CLOCK_STRETCHING",
+                "name": "USE_CLOCK_STRETCHING",
+                "range": null,
+                "title": "Use I2C clock stretching",
+                "type": "bool"
+            }
+        ],
+        "depends_on": null,
+        "id": "esp-si7021",
+        "title": "esp-si7021",
         "type": "menu"
     },
     {

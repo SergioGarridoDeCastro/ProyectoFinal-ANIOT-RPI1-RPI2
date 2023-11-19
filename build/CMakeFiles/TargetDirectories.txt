@@ -587,6 +587,13 @@ C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-R
 C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/wifi_provisioning/CMakeFiles/install.dir
 C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/wifi_provisioning/CMakeFiles/install/local.dir
 C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/wifi_provisioning/CMakeFiles/install/strip.dir
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/src/CMakeFiles/__idf_src.dir
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/src/CMakeFiles/edit_cache.dir
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/src/CMakeFiles/rebuild_cache.dir
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/src/CMakeFiles/list_install_components.dir
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/src/CMakeFiles/install.dir
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/src/CMakeFiles/install/local.dir
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/src/CMakeFiles/install/strip.dir
 C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir
 C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/protocol_examples_common/CMakeFiles/edit_cache.dir
 C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/protocol_examples_common/CMakeFiles/rebuild_cache.dir
@@ -594,3 +601,10 @@ C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-R
 C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/protocol_examples_common/CMakeFiles/install.dir
 C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/protocol_examples_common/CMakeFiles/install/local.dir
 C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/protocol_examples_common/CMakeFiles/install/strip.dir
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/esp-si7021/CMakeFiles/__idf_esp-si7021.dir
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/esp-si7021/CMakeFiles/edit_cache.dir
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/esp-si7021/CMakeFiles/rebuild_cache.dir
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/esp-si7021/CMakeFiles/list_install_components.dir
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/esp-si7021/CMakeFiles/install.dir
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/esp-si7021/CMakeFiles/install/local.dir
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/esp-si7021/CMakeFiles/install/strip.dir

@@ -34,7 +34,7 @@ endif()
 
 # Set default install directory permissions.
 if(NOT DEFINED CMAKE_OBJDUMP)
-  set(CMAKE_OBJDUMP "C:/Users/Lenovo/.espressif/tools/xtensa-esp32-elf/esp-2022r1-11.2.0/xtensa-esp32-elf/bin/xtensa-esp32-elf-objdump.exe")
+  set(CMAKE_OBJDUMP "C:/Users/Lenovo/Espressif/tools/xtensa-esp32-elf/esp-2022r1-11.2.0/xtensa-esp32-elf/bin/xtensa-esp32-elf-objdump.exe")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
@@ -389,6 +389,16 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
+  include("C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/src/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
   include("C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/protocol_examples_common/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/esp-si7021/cmake_install.cmake")
 endif()
 
