@@ -1,0 +1,60 @@
+menu "Project Configuration"
+    config BROKER_URL
+        string "Broker URL"
+        default "mqtt://mqtt.eclipseprojects.io"
+        help
+            URL of the broker to connect to
+
+    config BROKER_URL_FROM_STDIN
+        bool
+        default y if BROKER_URL = "FROM_STDIN"
+
+    config MQTT_USERNAME
+        string "MQTT Username"
+        default "mqtt_username"
+        help
+            Username to use in MQTT
+
+    config MQTT_PASSWORD
+        string "MQTT Password"
+        default "mqtt_password"
+        help
+            Password to use in MQTT
+
+    config LWT_TOPIC
+        string  "LWT topic"
+        default "nodo/lwt"
+        help 
+            Topic del mensaje LWT (Last Will and Testament).
+
+    config LWT_MESSAGE
+        string "LWT message"
+        default "The node is desconnected"
+        help
+            Contenido del mensaje LWT.
+
+    config LWT_RETAIN
+        int "LWT Retain"
+        default 1
+        help
+            Flag retain para el contenido del mensaje LWT
+
+    config LWT_QOS
+        int "LWT_QoS"
+        default 1
+        help 
+            LWT message QoS
+            
+    config KEEPALIVE
+        int "Keepalive"
+        default 120
+        help
+            Valor del temporizador de keepalive
+
+    config QOS_MQTT
+        int "QoS"
+        default 1
+        help
+            QoS de cada mensaje
+
+endmenu

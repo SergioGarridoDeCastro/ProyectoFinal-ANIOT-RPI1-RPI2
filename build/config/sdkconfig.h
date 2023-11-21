@@ -230,9 +230,11 @@
 #define CONFIG_BROKER_URL "mqtt://mqtt.eclipseprojects.io"
 #define CONFIG_MQTT_USERNAME "mqtt_username"
 #define CONFIG_MQTT_PASSWORD "mqtt_password"
-#define CONFIG_ESP_WIFI_SSID "myssid"
-#define CONFIG_ESP_WIFI_PASSWORD "mypassword"
-#define CONFIG_ESP_MAXIMUM_RETRY 5
+#define CONFIG_LWT_TOPIC "nodo/lwt"
+#define CONFIG_LWT_MESSAGE "The node is desconnected"
+#define CONFIG_LWT_RETAIN 0
+#define CONFIG_LWT_QOS 1
+#define CONFIG_KEEPALIVE 120
 #define CONFIG_ENV_GPIO_RANGE_MIN 0
 #define CONFIG_ENV_GPIO_RANGE_MAX 39
 #define CONFIG_ENV_GPIO_IN_RANGE_MAX 39

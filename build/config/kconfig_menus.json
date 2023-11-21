@@ -4064,31 +4064,51 @@
             {
                 "children": [],
                 "depends_on": null,
-                "help": "SSID (network name) to connect to.",
-                "id": "ESP_WIFI_SSID",
-                "name": "ESP_WIFI_SSID",
+                "help": "Topic del mensaje LWT (Last Will and Testament).",
+                "id": "LWT_TOPIC",
+                "name": "LWT_TOPIC",
                 "range": null,
-                "title": "WiFi SSID",
+                "title": "LWT topic",
                 "type": "string"
             },
             {
                 "children": [],
                 "depends_on": null,
-                "help": "WiFi password (WPA2) to use.",
-                "id": "ESP_WIFI_PASSWORD",
-                "name": "ESP_WIFI_PASSWORD",
+                "help": "Contenido del mensaje LWT.",
+                "id": "LWT_MESSAGE",
+                "name": "LWT_MESSAGE",
                 "range": null,
-                "title": "WiFi Password",
+                "title": "LWT message",
                 "type": "string"
             },
             {
                 "children": [],
                 "depends_on": null,
-                "help": "Set the Maximum retry to avoid station reconnecting to the AP unlimited when the AP is really inexistent.",
-                "id": "ESP_MAXIMUM_RETRY",
-                "name": "ESP_MAXIMUM_RETRY",
+                "help": "Flag retain para el contenido del mensaje LWT",
+                "id": "LWT_RETAIN",
+                "name": "LWT_RETAIN",
                 "range": null,
-                "title": "Maximum Retry",
+                "title": "LWT Retain",
+                "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "LWT message QoS",
+                "id": "LWT_QOS",
+                "name": "LWT_QOS",
+                "range": null,
+                "title": "QoS",
+                "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "Valor del temporizador de keepalive",
+                "id": "KEEPALIVE",
+                "name": "KEEPALIVE",
+                "range": null,
+                "title": "Keepalive",
                 "type": "int"
             }
         ],
