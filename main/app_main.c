@@ -23,11 +23,6 @@
 
 static const char *TAG = "user_event_loops";
 
-void periodic_timer_callback()
-{
-    ESP_LOGI(TAG, "timer");
-}
-
 void monitorize_handler(void *handler_arg, esp_event_base_t base, int32_t id, void *event_data)
 {
 
@@ -64,18 +59,6 @@ void app_main(void)
         err = nvs_flash_init();
     }
     ESP_ERROR_CHECK(err);
-    /* Enable wakeup from light sleep by gpio */
-
-    const esp_timer_create_args_t periodic_timer_args = {
-        .callback = &periodic_timer_callback,
-        /* name is optional, but may help identify the timer when debugging */
-        .name = "periodic"};
-    esp_timer_handle_t periodic_timer;
-    ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
-    /* Start the timers */
-    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 100000000));
     muestradora(1000000);
     xTaskCreate(states_machine, "states_machine", 4096, NULL, tskIDLE_PRIORITY, NULL);
-    ESP_ERROR_CHECK(esp_timer_stop(periodic_timer));
-    ESP_ERROR_CHECK(esp_timer_delete(periodic_timer));
 }
