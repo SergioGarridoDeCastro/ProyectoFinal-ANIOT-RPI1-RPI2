@@ -686,7 +686,7 @@
     "PCNT_ENABLE_DEBUG_LOG": false,
     "PCNT_ISR_IRAM_SAFE": false,
     "PCNT_SUPPRESS_DEPRECATE_WARN": false,
-    "PERIPH_CTRL_FUNC_IN_IRAM": false,
+    "PERIPH_CTRL_FUNC_IN_IRAM": true,
     "PM_ENABLE": false,
     "PTHREAD_DEFAULT_CORE_0": false,
     "PTHREAD_DEFAULT_CORE_1": false,
