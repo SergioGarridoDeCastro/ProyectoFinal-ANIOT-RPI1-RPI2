@@ -1,7 +1,7 @@
 {
     "version":            "1",
     "project_name":       "ProyectoFinal-ANIOT-RPI1-RPI2",
-    "project_version":    "2bc8b37-dirty",
+    "project_version":    "0ef18a9-dirty",
     "project_path":       "/home/james/Desktop/ProyectoFinal-ANIOT-RPI1-RPI2",
     "idf_path":           "/home/james/esp/esp-idf",
     "build_dir":          "/home/james/Desktop/ProyectoFinal-ANIOT-RPI1-RPI2/build",
