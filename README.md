@@ -4,7 +4,18 @@ El objetivo global del proyecto es definir e implementa un sistema de monitoriza
 ## ANIOT
 1. 
 ## RPI-I
-1. 
+1. Uso de menuconfig para configurar un SSID wpa2 al que conectar el equipo
+2. Obtener una conexión a internet a través de un punto de acceso wifi wpa2, tomando la SSID configurada con menuconfig
+3. Contemplar en el diseño basado en eventos incluyendo los eventos de la wifi, como por ejemplo la desconexión del punto de acceso
+- Manejo de Eventos WiFi
+se implemento un manejador de eventos WiFi para diferentes situaciones, como el inicio de la conexión (WIFI_EVENT_STA_START), la desconexión (WIFI_EVENT_STA_DISCONNECTED), y la conexión exitosa (WIFI_EVENT_STA_CONNECTED). Estos eventos proporcionan información clave sobre el estado de la conexión.
+
+- Reconexión Automática
+En caso de que la conexión WiFi se pierda, el código intenta automáticamente reconectarse al punto de acceso (AP). Se implementa un mecanismo de reintento controlado por el contador s_retry_num, y después de un número máximo de intentos, el sistema se reinicia. Además, la variable s_retry_num lleva la cuenta de los intentos de reconexión y un EventGroupHandle_t para manejar los eventos de conexión y fallo de WiFi.
+
+- Limpieza de Recursos
+Se implemento la función cleanup() que se llama cuando se pierde la conexioón WiFi, esta función se encarga de desconectar la WiFi y desregistrar los manejadores de eventos, Esto asegura que los recursos se liberen adecuadamente.
+
 ## RPI-II
 1. Establecida la jerarquía MQTT.
 La jerarquía establecida tendrá la siguiente forma: facultad/piso/aula/numero/tipo_sensor/. A continuación dos ejemplos de como se representaria un topic segun la jeraquía:
