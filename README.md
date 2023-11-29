@@ -44,5 +44,12 @@ Todos los parametros relativos a LWT y el timeout (keepalive) se configuran medi
 5. Comunicación bidireccional para control remoto de frecuencia de muestreo de cada sensor.
 6. Parámetros de QoS (MQTT) configurables vía menuconfig y aplicados donde corresponda.
 
+# Sprint 2
+## ANIOT
+1. Actualizacion del reloj de la placa por medio de SNTP
+## RPI-I
+1. 
+## RPI-II
+2. 
 
 ## NOTAS

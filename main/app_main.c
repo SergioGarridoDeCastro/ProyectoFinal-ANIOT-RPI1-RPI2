@@ -20,6 +20,10 @@
 #include "nvs_flash.h"
 #include "nvs.h"
 #include "esp_pm.h"
+#include <time.h>
+#include <sys/time.h>
+#include <portmacro.h>
+#include <sntp.h>
 
 static const char *TAG = "user_event_loops";
 
@@ -42,15 +46,25 @@ void states_machine()
 }
 
 static void initialize_sntp(void){
-    
+        ESP_LOGI(TAG, "Initializing SNTP");
+        esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("poolntp.org");
+        config.timezone = 1; //UTC+1 para Madrid
+        //config.smooth_sync = true;
+        //config.sync_cb = time_sync_notification_cb;
+        esp_netif_sntp_init(&config);
 }
 
 static void obtain_time(void){
-    initialize_sntp();
+    if(initialize_sntp() != ESP_OK{
+        ESP_LOGE(TAG, "SNTP initialization failed");
+        return;
+    }
 
     struct tm timeinfo = {0};
     int retry = 0;
     const int retry_count = 10;
+    time_t now;
+
     while(esp_netif_sntp_sync_wait(portTICK_PERIOD_MS) == ESP_ERR_TIMEOUT &&  ++retry < retry_count ){
         ESP_LOGI(TAG, "Esperando... (%d/%d)", retry, retry_count);
     }
