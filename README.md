@@ -34,10 +34,15 @@ Se consideran tambien como topic para la configuracion de la frecuencia de muest
 Y como topic para provisionar al nodo con los topics en los que se publicaran: v1/gateway/control/node_provisioning
 
 2. Esquema publicación/suscripción a partir de datos sensorizados.
-3. Uso de usuario/contraseña en MQTT (configurable vía menuconfig)
-4. Notificación de activación/caídas de nodos (LWT, timeout configurable) y otros eventos de interés
-5. Comunicación bidireccional para control remoto de frecuencia de muestreo de cada sensor
-6. Parámetros de QoS (MQTT) configurables vía menuconfig y aplicados donde corresponda
+El nodo al conectarse por primera se suscribe al topic v1/gateway/control/node_provisioning del dashboard de Thingsboard para obtener los topics en los que debe publicar. Tambien se suscribe al topic v1/gateway/configure/frequency para configurar la frecuencia de muestreo.
+3. Uso de usuario/contraseña en MQTT (configurable vía menuconfig).
+4. Notificación de activación/caídas de nodos (LWT, timeout configurable) y otros eventos de interés.
+Se plantea notificar cuando un nodo recibe los siguientes eventos:
+    MQTT_EVENT_CONNECTED
+    MQTT_EVENT_DISCONNECTED
+Todos los parametros relativos a LWT y el timeout (keepalive) se configuran mediante menuconfig.
+5. Comunicación bidireccional para control remoto de frecuencia de muestreo de cada sensor.
+6. Parámetros de QoS (MQTT) configurables vía menuconfig y aplicados donde corresponda.
 
 
 ## NOTAS

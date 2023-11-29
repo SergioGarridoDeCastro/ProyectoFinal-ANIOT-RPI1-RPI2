@@ -42,7 +42,13 @@ static int sampling_frequency = 30;
 //Funcion para manejar los comandos remotos a traves de MQTT
 static void handle_mqtt_configure(const char *topic, const char *datos){
     if(strcmp(topic, SAMPLING_FREQUENCY_TOPIC) == 0){
-        sscanf(datos, "%d", sampling_frequency);
+        sscanf(datos, "%d", &sampling_frequency);
+    }
+    else if(strcmp(topic, CONTROL_TOPIC) == 0){
+        
+    }
+    else{
+
     }
 }
 
@@ -72,6 +78,7 @@ static void publish_data_sgp30(int piso, int aula, int numero, cJSON valor_senso
     char topic[100];
     snprintf(topic, sizeof(topic), "facultad_informatica/piso_%d/aula_%d/%d/SGP30", piso, aula, numero);
     esp_mqtt_client_publish(mqtt_client,(const char *) topic, (const char *) &valor_sensor,  0, 1, 0);
+    esp_mqtt_client_publish(mqtt_client,(const char *) topic, (const char *) &valor_sensor,  0, 1, 0);
 }
 
 /***
@@ -95,6 +102,18 @@ static void log_error_if_nonzero(const char *message, int error_code)
     }
 }
 
+static void publish_lwt(){
+    esp_mqtt_client_publish(mqtt_client, CONFIG_LWT_TOPIC, CONFIG_LWT_MESSAGE, 0, 
+            CONFIG_LWT_QOS, CONFIG_LWT_RETAIN);
+}
+
+static void log_error_if_nonzero(const char *message, int error_code)
+{
+    if (error_code != 0) {
+        ESP_LOGE(TAG, "Last error %s: 0x%x", message, error_code);
+    }
+}
+
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data){
     ESP_LOGD(TAG, "Event dispatched from event loop base = %s, event_id = %d", base, event_id);
 
@@ -103,29 +122,42 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     int msg_id;
 
     switch ((esp_mqtt_event_id_t)event_id)
+    switch ((esp_mqtt_event_id_t)event_id)
     {
     case MQTT_EVENT_CONNECTED:
     ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
+    ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
         ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
+        suscribe_topic_control();
         suscribe_topic_control();
         notify_node_event("Node activated");
         break;
     case MQTT_EVENT_DISCONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
+        ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
         notify_node_event("Node disconnected");
+        publish_lwt();
         publish_lwt();
         break;
     case MQTT_EVENT_SUBSCRIBED:
         ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
+        ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
         break;
     case MQTT_EVENT_UNSUBSCRIBED:
+        ESP_LOGI(TAG, "MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
         ESP_LOGI(TAG, "MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
         break;
     case MQTT_EVENT_PUBLISHED:
         ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
+        ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
         break;
     case MQTT_EVENT_DATA:
         ESP_LOGI(TAG, "MQTT_EVENT_DATA");
+        printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
+        printf("DATA=%.*s\r\n", event->data_len, event->data);
+
+        //Se llama a mqtt_configure_callback
+        mqtt_configure_callback((const char *) event->topic, (const char *) event->data);
         printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
         printf("DATA=%.*s\r\n", event->data_len, event->data);
 
@@ -153,6 +185,7 @@ void init_publisher_mqtt (void){
         .broker.address.uri = CONFIG_BROKER_URL,
         .credentials.username = CONFIG_MQTT_USERNAME,
         .credentials.authentication.password = CONFIG_MQTT_PASSWORD,
+        //.network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
         //.network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
     };
 
