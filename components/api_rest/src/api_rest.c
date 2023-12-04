@@ -10,6 +10,8 @@
 #include "cJSON.h"
 #include "cbor.h"
 
+#include "api_rest.h"
+
 static const char *REST_TAG = "server-rest";
 #define REST_CHECK(a, str, goto_tag, ...)                                              \
     do                                                                                 \

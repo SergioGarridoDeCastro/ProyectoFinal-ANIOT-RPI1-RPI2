@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -24,16 +23,10 @@
 
 #include "cJSON.h"
 #include "cbor.h"
-static const char *TAG = "MQTT";
+
+#include "mqtt-api.h    "
 
 static esp_mqtt_client_handle_t mqtt_client;
-const char *lwt_topic; //topic del mensaje LWT (Last Will and Testament)
-const char *lwt_msg; //contenido del mensaje LWT.
-int lwt_qos; //QoS del mensaje LWT.
-int lwt_retain; //flag retain para el mensaje LWT.
-int lwt_msg_len; //longitud del mensaje LWT.
-int keepalive; //valor del temporizador de keepalive (por defecto 120 segundos).
-
 static int sampling_frequency = 30;
 
 #define CONTROL_TOPIC "v1/gateway/control/node_provisioning"
@@ -90,19 +83,7 @@ static void publish_data_si7021(int piso, int aula, int numero, cJSON valor_sens
     esp_mqtt_client_publish(mqtt_client,(const char *) topic, (const char *) &valor_sensor, 0, 1, 0);
 }
 
-static void publish_lwt(){
-    esp_mqtt_client_publish(mqtt_client, CONFIG_LWT_TOPIC, CONFIG_LWT_MESSAGE, 0, 
-            CONFIG_LWT_QOS, CONFIG_LWT_RETAIN);
-}
-
-static void log_error_if_nonzero(const char *message, int error_code)
-{
-    if (error_code != 0) {
-        ESP_LOGE(TAG, "Last error %s: 0x%x", message, error_code);
-    }
-}
-
-static void publish_lwt(){
+static void publish_lwt(void){
     esp_mqtt_client_publish(mqtt_client, CONFIG_LWT_TOPIC, CONFIG_LWT_MESSAGE, 0, 
             CONFIG_LWT_QOS, CONFIG_LWT_RETAIN);
 }
