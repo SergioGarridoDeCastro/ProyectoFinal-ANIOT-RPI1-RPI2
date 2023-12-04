@@ -31,27 +31,30 @@ menu "Project Configuration"
         string "LWT message"
         default "The node is desconnected"
         help
-            contenido del mensaje LWT.
+            Contenido del mensaje LWT.
 
     config LWT_RETAIN
-        
-    config ESP_WIFI_SSID
-        string "WiFi SSID"
-        default "myssid"
+        int "LWT Retain"
+        default 1
         help
-            SSID (network name) to connect to.
+            Flag retain para el contenido del mensaje LWT
 
-    config ESP_WIFI_PASSWORD
-        string "WiFi Password"
-        default "mypassword"
+    config LWT_QOS
+        int "LWT_QoS"
+        default 1
+        help 
+            LWT message QoS
+            
+    config KEEPALIVE
+        int "Keepalive"
+        default 120
         help
-            WiFi password (WPA2) to use.
+            Valor del temporizador de keepalive
 
-    config ESP_MAXIMUM_RETRY
-        int "Maximum Retry"
-        default 5
+    config QOS_MQTT
+        int "QoS"
+        default 1
         help
-            Set the Maximum retry to avoid station reconnecting to the AP unlimited when the AP is really inexistent.
-
+            QoS de cada mensaje
 
 endmenu
