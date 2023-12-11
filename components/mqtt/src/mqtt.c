@@ -19,25 +19,25 @@
 #include "lwip/netdb.h"
 
 #include "esp_log.h"
-#include "mqtt_client.h"
+#include "mqtt.h"
 
 #include "cJSON.h"
 #include "cbor.h"
 
-#include "mqtt-api.h    "
-
 static esp_mqtt_client_handle_t mqtt_client;
 static int sampling_frequency = 30;
 
-#define CONTROL_TOPIC "v1/gateway/control/node_provisioning"
+#define PROVISIONING_TOPIC "v1/gateway/control/node_provisioning"
 #define SAMPLING_FREQUENCY_TOPIC "v1/gateway/configure/frequency"
 
 //Funcion para manejar los comandos remotos a traves de MQTT
 static void handle_mqtt_configure(const char *topic, const char *datos){
     if(strcmp(topic, SAMPLING_FREQUENCY_TOPIC) == 0){
+        ESP_LOGI(TAG, "Setting sampling frequency for topic %s to %f", topic, frequency);
         sscanf(datos, "%d", &sampling_frequency);
     }
-    else if(strcmp(topic, CONTROL_TOPIC) == 0){
+    else if(strcmp(topic, PROVISIONING_TOPIC) == 0){ 
+        ESP_LOGI(TAG, "Provisioning node for topic %s to %f", topic, frequency);
         
     }
     else{
@@ -168,6 +168,8 @@ void init_publisher_mqtt (void){
         .credentials.authentication.password = CONFIG_MQTT_PASSWORD,
         //.network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
         //.network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
+        .transport = MQTT_TRANSPORT_OVER_SSL, // Habilita el transporte seguro
+        //.cert_pem = /* Certificado PEM para la conexión segura */
     };
 
 #if CONFIG_BROKER_URL_FROM_STDIN

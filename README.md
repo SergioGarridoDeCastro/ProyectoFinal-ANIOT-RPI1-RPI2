@@ -48,8 +48,9 @@ Todos los parametros relativos a LWT y el timeout (keepalive) se configuran medi
 ## ANIOT
 1. Actualizacion del reloj de la placa por medio de SNTP
 ## RPI-I
-1. 
+1. Provisionamiento del nodo por WiFi utilizando la aplicación móvil de Espressif. Al nodo se le propocionan el SSID y el password de la red a la que ha de conectarse.
+2. Utilización de los modos de bajo consumo de la WiFi para ahorrar energia cuando no se envie nada desde el nodo.
 ## RPI-II
-2. 
+1. 
 
 ## NOTAS
