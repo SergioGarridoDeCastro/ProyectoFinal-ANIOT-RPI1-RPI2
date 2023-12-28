@@ -52,3 +52,8 @@ static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filepa
     }
     return httpd_resp_set_type(req, type);
 }
+
+
+static esp_err_t rest_common_get_handler(httpd_req_t *req){
+    
+}

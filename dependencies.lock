@@ -1,9 +1,15 @@
 dependencies:
+  espressif__qrcode:
+    component_hash: null
+    source:
+      path: C:\Users\Lenovo\OneDrive\MASTER_IOT\ProyectoAreaTecnologia\ProyectoFinal-ANIOT-RPI1-RPI2\components\espressif__qrcode
+      type: local
+    version: 0.1.0
   idf:
     component_hash: null
     source:
       type: idf
-    version: 5.0.2
-manifest_hash: 83fb533fac9db42d6c2259b7f4b5d837e3137089686cdc32210767bdfa2e33b1
+    version: 5.1.2
+manifest_hash: 5622f6b6ea68bfbd3b1659401d9dddf732c5c414f0ca93088532b49d0878d8e3
 target: esp32
 version: 1.0.0
