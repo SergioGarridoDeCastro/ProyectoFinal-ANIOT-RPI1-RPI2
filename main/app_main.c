@@ -101,6 +101,8 @@ void app_main(void)
         time(&now);
     }
 
+    
+
     ESP_ERROR_CHECK(err);
     muestradora(1000000);
     xTaskCreate(states_machine, "states_machine", 4096, NULL, tskIDLE_PRIORITY, NULL);
