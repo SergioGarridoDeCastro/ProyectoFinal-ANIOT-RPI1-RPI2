@@ -22,7 +22,6 @@
 #include "esp_pm.h"
 #include <time.h>
 #include <sys/time.h>
-#include <portmacro.h>
 #include <sntp.h>
 
 static const char *TAG = "user_event_loops";
@@ -45,33 +44,6 @@ void states_machine()
     }
 }
 
-static void initialize_sntp(void){
-        ESP_LOGI(TAG, "Initializing SNTP");
-        esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("poolntp.org");
-        config.timezone = 1; //UTC+1 para Madrid
-        //config.smooth_sync = true;
-        //config.sync_cb = time_sync_notification_cb;
-        esp_netif_sntp_init(&config);
-}
-
-static void obtain_time(void){
-    if(initialize_sntp() != ESP_OK{
-        ESP_LOGE(TAG, "SNTP initialization failed");
-        return;
-    }
-
-    struct tm timeinfo = {0};
-    int retry = 0;
-    const int retry_count = 10;
-    time_t now;
-
-    while(esp_netif_sntp_sync_wait(portTICK_PERIOD_MS) == ESP_ERR_TIMEOUT &&  ++retry < retry_count ){
-        ESP_LOGI(TAG, "Esperando... (%d/%d)", retry, retry_count);
-    }
-    time(&now);
-    localtime_r(&now, &timeinfo);
-}
-
 void app_main(void)
 {
     ESP_LOGI(TAG, "setting up");
@@ -89,18 +61,12 @@ void app_main(void)
         ESP_ERROR_CHECK(nvs_flash_erase());
         err = nvs_flash_init();
     }
-
-    time_t now;
-    struct tm timeinfo;
-    time(&now);
-    localtime(&now, &timeinfo);
-
-    if(timeinfo.tm_year < (2024 - 1900)){
-        ESP_LOG(TAG, "Time is not set yet, Connecting to WiFi and getting time over NTP");
-        obtain_time();
-        time(&now);
-    }
-
+    esp_pm_config_esp32_t config_power_mode = {
+        .max_freq_mhz = 240,
+        .min_freq_mhz = 80,
+        .light_sleep_enable = true,
+    };
+    esp_pm_configure(&config_power_mode);
     ESP_ERROR_CHECK(err);
     muestradora(1000000);
     xTaskCreate(states_machine, "states_machine", 4096, NULL, tskIDLE_PRIORITY, NULL);
