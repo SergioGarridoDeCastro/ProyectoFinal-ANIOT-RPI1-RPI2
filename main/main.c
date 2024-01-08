@@ -24,8 +24,6 @@
 #include <sys/time.h>
 #include <portmacro.h>
 #include <sntp.h>
-#include <esp_netif_sntp.h>
-#include <esp_err.h>
 
 static const char *TAG = "user_event_loops";
 
@@ -57,7 +55,7 @@ static void initialize_sntp(void){
 }
 
 static void obtain_time(void){
-    if(initialize_sntp() != ESP_OK){
+    if(initialize_sntp() != ESP_OK{
         ESP_LOGE(TAG, "SNTP initialization failed");
         return;
     }
@@ -81,9 +79,6 @@ void app_main(void)
     i2c_master_init();
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     ESP_ERROR_CHECK(esp_event_handler_register(TEMP, TEMP_OBTAINED, monitorize_handler, NULL));
-    
-    //Inicializa el servidor REST
-    ESP_ERROR_CHECK(start_rest_server(CONFIG_EXAMPLE_WEB_MOUNT_POINT));
 
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
@@ -105,8 +100,6 @@ void app_main(void)
         obtain_time();
         time(&now);
     }
-
-
 
     ESP_ERROR_CHECK(err);
     muestradora(1000000);
