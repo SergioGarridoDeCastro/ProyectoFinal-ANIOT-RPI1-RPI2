@@ -5,7 +5,8 @@
     "C_Cpp.errorSquiggles": "enabled",
     "idf.adapterTargetName": "esp32",
     "files.associations": {
-      "mqtt.h": "c"
+      "mqtt.h": "c",
+      "esp_http_server.h": "c"
     },
     "C_Cpp.default.compilerPath": "C:\\msys64\\mingw64\\bin\\gcc.exe"
   }

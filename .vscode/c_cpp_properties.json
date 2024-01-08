@@ -7,7 +7,8 @@
                 "${config:idf.espIdfPathWin}/components/**",
                 "${config:idf.espAdfPath}/components/**",
                 "${config:idf.espAdfPathWin}/components/**",
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "C:/Users/Lenovo/esp/esp-idf/components/lwip/lwip/src/include/lwip"
             ],
             "browse": {
                 "path": [

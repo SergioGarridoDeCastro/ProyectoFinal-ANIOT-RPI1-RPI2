@@ -23,6 +23,7 @@
 
 #include <cjson/cJSON.h>
 #include "cbor.h"
+#include <mqtt_client.h>
 
 static esp_mqtt_client_handle_t mqtt_client;
 static int sampling_frequency = 30;
@@ -33,7 +34,10 @@ static int sampling_frequency = 30;
 //Funcion para manejar los comandos remotos a traves de MQTT
 static void handle_mqtt_configure(const char *topic, const char *datos){
     if(strcmp(topic, SAMPLING_FREQUENCY_TOPIC) == 0){
-        ESP_LOGI(TAG, "Setting sampling frequency for topic %s to %f", topic, frequency);
+        
+        
+        
+        (TAG, "Setting sampling frequency for topic %s to %f", topic, frequency);
         sscanf(datos, "%d", &sampling_frequency);
     }
     else if(strcmp(topic, PROVISIONING_TOPIC) == 0){ 
@@ -62,7 +66,9 @@ static void suscribe_topic_control(){
     esp_mqtt_client_subscribe(mqtt_client, PROVISIONING_TOPIC, 0);
 }
 
-static void topic_control_callback(const char *topic, const char *payload){}
+static void topic_control_callback(const char *topic, const char *payload){
+    
+}
 
 /***
  * Funcion para publicar los datos del sensor SGP30
@@ -70,8 +76,8 @@ static void topic_control_callback(const char *topic, const char *payload){}
 static void publish_data_sgp30(int piso, int aula, int numero, cJSON valor_sensor){
     char topic[100];
     snprintf(topic, sizeof(topic), "facultad_informatica/piso_%d/aula_%d/%d/SGP30", piso, aula, numero);
-    esp_mqtt_client_publish(mqtt_client,(const char *) topic, (const char *) &valor_sensor,  0, CONFIG_QOS, 0);
-    esp_mqtt_client_publish(mqtt_client,(const char *) topic, (const char *) &valor_sensor,  0, CONFIG_QOS, 0);
+    esp_mqtt_client_publish(mqtt_client,(const char *) topic, (const char *) &valor_sensor,  0, CONFIG_QOS_MQTT, 0);
+    esp_mqtt_client_publish(mqtt_client,(const char *) topic, (const char *) &valor_sensor,  0, CONFIG_QOS_MQTT, 0);
 }
 
 /***
@@ -164,10 +170,11 @@ void init_publisher_mqtt (void){
         .broker.address.uri = CONFIG_BROKER_URL,
         .credentials.username = CONFIG_MQTT_USERNAME,
         .credentials.authentication.password = CONFIG_MQTT_PASSWORD,
-        //.network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
-        //.network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
+        .network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
         .transport = MQTT_TRANSPORT_OVER_SSL, // Habilita el transporte seguro
-        //.cert_pem = /* Certificado PEM para la conexión segura */
+        .cert_pem = (const unsigned char *) /* Certificado PEM para la conexión segura */,
+        .client_cert_pem = (const unsigned char *) node_cert_pem_start,
+        .client_key_pem = (const unsigned char *)node_key_pem_start
     };
 
 #if CONFIG_BROKER_URL_FROM_STDIN
