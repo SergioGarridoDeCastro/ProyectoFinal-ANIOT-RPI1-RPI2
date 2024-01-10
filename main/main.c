@@ -55,7 +55,7 @@ static void initialize_sntp(void){
 }
 
 static void obtain_time(void){
-    if(initialize_sntp() != ESP_OK{
+    if(initialize_sntp() != ESP_OK){
         ESP_LOGE(TAG, "SNTP initialization failed");
         return;
     }

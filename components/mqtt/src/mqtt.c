@@ -31,12 +31,30 @@ static int sampling_frequency = 30;
 #define PROVISIONING_TOPIC "v1/gateway/control/node_provisioning"
 #define SAMPLING_FREQUENCY_TOPIC "v1/gateway/configure/frequency"
 
+//Para añadir SSL/TLS sobre MQTT
+#if CONFIG_BROKER_CERTIFICATE_OVERRIDDEN == 1
+static const uint8_t node_cert_pem_start[]  = "-----BEGIN CERTIFICATE-----\n" CONFIG_BROKER_CERTIFICATE_OVERRIDE "\n-----END CERTIFICATE-----";
+#else
+extern const uint8_t node_cert_pem_start[]   asm("_binary_node_cert_pem_start");
+#endif
+extern const uint8_t mnode_cert_pem_end[]   asm("_binary_node_cert_pem_end");
+
+static void send_binary(esp_mqtt_client_handle_t cliente){
+    esp_partition_mmap_handle_t out_handle;
+    const void *binary_address;
+    cons esp_partition_t *partition;
+    esp_partition_mmap(partition, 0, partition->size, ESP_PARTITION_MMAP_DATA, &binary_address, &out_handle);
+    // sending only the configured portion of the partition (if it's less than the partition size)
+    int binary_size = MIN(CONFIG_BROKER_BIN_SIZE_TO_SEND, partition->size);
+    int msg_id = esp_mqtt_client_publish(cliente, "/topic/binary", binary_address, binary_size, 0, 0);
+    ESP_LOGI(TAG, "binary sent with msg_id=%d", msg_id);
+}
+
+
+
 //Funcion para manejar los comandos remotos a traves de MQTT
 static void handle_mqtt_configure(const char *topic, const char *datos){
-    if(strcmp(topic, SAMPLING_FREQUENCY_TOPIC) == 0){
-        
-        
-        
+    if(strcmp(topic, SAMPLING_FREQUENCY_TOPIC) == 0){     
         (TAG, "Setting sampling frequency for topic %s to %f", topic, frequency);
         sscanf(datos, "%d", &sampling_frequency);
     }
@@ -56,7 +74,26 @@ static void mqtt_configure_callback(const char *topic, const char *datos){
 
 //Funcion para notificar la de activación/caídas de nodos y otros eventos de interes
 static void notify_node_event(const char *event){
-    
+    switch (event)
+    {
+    case "Node activated":
+        ESP_LOGI(TAG, "Node Event: %s", event);        
+        break;
+    case "Node disconnected":
+        ESP_LOGI(TAG, "Node Event: %s", event);
+        break;
+    case "Low battery":
+        ESP_LOGI(TAG, "Node Event: %s", event);
+        break;
+    case "Error reading sensor":
+        ESP_LOGI(TAG, "Node Event: %s", event);
+        break;
+    case "CO2 high":
+        ESP_LOGI(TAG, "Node Event: %s", event);
+        break;
+    default:
+        break;
+    }
 }
 
 /***
@@ -146,6 +183,11 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
             printf("DATA=%.*s\r\n", event->data_len, event->data);
 
+            if (strncmp(event->data, "send binary please", event->data_len) == 0) {
+                ESP_LOGI(TAG, "Sending the binary");
+                send_binary(client);
+            }
+
             //Se llama a mqtt_configure_callback
             mqtt_configure_callback((const char *) event->topic, (const char *) event->data);
             break;
@@ -172,9 +214,9 @@ void init_publisher_mqtt (void){
         .credentials.authentication.password = CONFIG_MQTT_PASSWORD,
         .network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
         .transport = MQTT_TRANSPORT_OVER_SSL, // Habilita el transporte seguro
-        .cert_pem = (const unsigned char *) /* Certificado PEM para la conexión segura */,
-        .client_cert_pem = (const unsigned char *) node_cert_pem_start,
-        .client_key_pem = (const unsigned char *)node_key_pem_start
+        .cert_pem = node_cert_pem_start /* Certificado PEM para la conexión segura */,
+        //.client_cert_pem = (const unsigned char *) node_cert_pem_start,
+        //.client_key_pem = (const unsigned char *)node_key_pem_start
     };
 
 #if CONFIG_BROKER_URL_FROM_STDIN
