@@ -27,9 +27,21 @@
 
 static const char *TAG = "user_event_loops";
 
+
+//Definicion de la maquina de estados 
+typedef enum{
+    STATE_INIT,
+    STATE_MONITORITATION,
+    STATE_LOW_POWER,
+    STATE_OTA
+}state_machine_t;
+
+//El estado inicial se considera STATE_INIT
+static state_machine_t current_state = STATE_INIT;
+
+//Handler para la monitorizacion
 void monitorize_handler(void *handler_arg, esp_event_base_t base, int32_t id, void *event_data)
 {
-
     char msg[64];
     float temp = *((float *)(event_data));
     snprintf(msg, sizeof msg, "%f", temp);

@@ -13,20 +13,25 @@
 // limitations under the License.
 
 #include <string.h>
-
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/event_groups.h"
 #include "esp_bt_main.h"
 #include "esp_gap_ble_api.h"
 #include "bta_api.h"
 #include "bt_trace.h"
 #include "btc_manage.h"
 #include "btc_gap_ble.h"
+#include <time.h>
+#include "esp_log.h"
 
-#define SCAN_DURATION       10     // Duración del escaneo en segundos
+#define SCAN_DURATION       10    // Duración del escaneo en segundos
 #define RSSI_THRESHOLD      -70   // Umbral RSSI para filtrar dispositivos lejanos
 #define MAX_DEVICES         10    // Máximo número de dispositivos que se pueden manejar
 #define MAX_DISTANCE_THRESHOLD 40 // Umbral de distancia 
-#define FORGET_THRESHOLD  500  // Tiempo en segundos para considerar un dispositivo como "olvidado"
-
+#define FORGET_THRESHOLD  500     // Tiempo en segundos para considerar un dispositivo como "olvidado"
+#define D_0                 1     // Distancia de referencia para el calculo de una distancia
+#define RSSI_0              -50.0 // RSSI de referencia 
 
 
 //Variables globales y definicion de funciones sacadas del ejemplo del cliente GATT
@@ -37,7 +42,7 @@ static esp_gattc_char_elem_t *char_elem_result   = NULL;
 static esp_gattc_descr_elem_t *descr_elem_result = NULL;
 
 /* Declare static functions */
-static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
+static void esp_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
 static void esp_gattc_cb(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
 static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
 
@@ -64,6 +69,14 @@ static esp_ble_scan_params_t ble_scan_params = {
     .scan_window            = 0x30,
     .scan_duplicate         = BLE_SCAN_DUPLICATE_DISABLE
 };
+/*
+static esp_ble_scan_params_t ble_scan_params = {
+    .scan_type = BLE_SCAN_TYPE_PASSIVE,
+    .own_addr_type = BLE_ADDR_TYPE_PUBLIC,
+    .scan_filter_policy = BLE_SCAN_FILTER_ALLOW_ALL,
+    .scan_interval = 0x50,
+    .scan_window = 0x30
+};*/
 
 struct gattc_profile_inst {
     esp_gattc_cb_t gattc_cb;
@@ -84,20 +97,19 @@ static struct gattc_profile_inst gl_profile_tab[PROFILE_NUM] = {
     },
 };
 
+/*
 typedef struct {
     double x;
     double y;
-} beacon_t;
+} beacon_t;*/
 
 
+// Variables del filtro de Kalman
+double kalman_gain = 0.0;
+double kalman_estimate = 0.0;
+double kalman_error_estimate = 1.0;  
+double kalman_process_noise = 0.1; 
 
-static esp_ble_scan_params_t ble_scan_params = {
-    .scan_type = BLE_SCAN_TYPE_PASSIVE,
-    .own_addr_type = BLE_ADDR_TYPE_PUBLIC,
-    .scan_filter_policy = BLE_SCAN_FILTER_ALLOW_ALL,
-    .scan_interval = 0x50,
-    .scan_window = 0x30
-};
 
 // Struct para almacenar los dispositivos detectados
 typedef struct {
@@ -105,9 +117,10 @@ typedef struct {
     int rssi;
     bool is_in_room;
     time_t last_detection_time;  // Marca de tiempo
+    bool detected_in_last_scan;  // Booleano que marca si un dispositivo ha sido detectado en el ultimo escaneo 
 } ble_device_t;
 
-ble_device_t detected_devices[MAX_DEVICES];
+ble_device_t ble_detected_devices[MAX_DEVICES];
 static int num_devices = 0;
 
 //Manejador de eventos GATT
@@ -430,7 +443,7 @@ static void esp_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_
 }
 
 
-esp_err_t esp_ble_gap_register_callback(esp_gap_ble_cb_t callback){
+/*esp_err_t esp_ble_gap_register_callback(esp_gap_ble_cb_t callback){
     if (esp_bluedroid_get_status() == ESP_BLUEDROID_STATUS_UNINITIALIZED) {
         return ESP_ERR_INVALID_STATE;
     }
@@ -439,8 +452,9 @@ esp_err_t esp_ble_gap_register_callback(esp_gap_ble_cb_t callback){
 
 
 static void process_scan_result(esp_ble_gap_cb_param_t* scan_result){
+  
 
-}
+}*/
 
 /**
  * Idea para posicionamiento Bluetooth -> Trilateracion o triangulacion por medio de beacons BLE 
@@ -451,16 +465,16 @@ static void trilateration2d_ble(beacon_t ){
 
 }
 
-//Funcion de estimacion de distancia con RSSI. La distancia devuelvta esta expresada en metros.
-static int estimate_distance(int rssi){
-    double A = 0.372;   // Ajusta estos valores según tu experimentación
-    double B = 0.183;   // Ajusta estos valores según tu experimentación
-    double RSSI_referencia = -50.0;  // RSSI a 1 metro de distancia
 
-    double distancia = pow(10, ((RSSI_referencia - rssi) / (10 * A)) + B);
-    return distancia;
+//Funcion de estimacion de distancia con RSSI. La distancia devuelta esta expresada en metros.
+static int estimate_distance(int rssi){
+    //Referencia de la formula: https://repositorio.unican.es/xmlui/bitstream/handle/10902/19626/428600.pdf?sequence=1 pagina 11
+    double n = (RSSI_0 - rssi)/(10*log(D_0));
+    double distancia = pow(10,(RSSI_0 - rssi)/(10*n));
+    return distancia; 
 }
 
+//Se aplica el filtro de kalman posteriormente a cada medida debido a la naturaleza dinamica 
 static double kalman_filter(){
 
 }
@@ -472,17 +486,19 @@ static void update_ble_devices_list(esp_bd_addr_t bd_addr, int rssi, int estimat
 
     if(index_device == -1){
         //Actualiza la informacion del dispositivo existente
-        ble_devices[index_device].rssi = rssi;
-        ble_devices[index_device].in_room = estimated_distance < MAX_DISTANCE_THRESHOLD;  // Define tu umbral de distancia
-        ble_devices[index_device].last_detection_time = time(NULL);
+        ble_detected_devices[index_device].rssi = rssi;
+        ble_detected_devices[index_device].in_room = estimated_distance < MAX_DISTANCE_THRESHOLD;  // Define tu umbral de distancia
+        ble_detected_devices[index_device].last_detection_time = time(NULL);
+        ble_detected_devices[index_device].detected_in_last_scan = true;
     }
     else{
         if(num_devices < MAX_DEVICES){
-            ble_devices[num_devices].rssi = rssi;
-            ble_devices[num_devices].in_room = estimated_distance < MAX_DISTANCE_THRESHOLD;
+            ble_detected_devices[num_devices].rssi = rssi;
+            ble_detected_devices[num_devices].in_room = estimated_distance < MAX_DISTANCE_THRESHOLD;
+            ble_detected_devices[index_device].detected_in_last_scan = true;
 
-            memcpy(ble_devices[num_devices].bd_addr, bd_addr, ESP_BD_ADDR_LEN);
-            ble_devices[num_devices].last_detection_time = time(NULL);
+            memcpy(ble_detected_devices[num_devices].bd_addr, bd_addr, ESP_BD_ADDR_LEN);
+            ble_detected_devices[num_devices].last_detection_time = time(NULL);
             num_devices++:
         }
     }
@@ -491,7 +507,7 @@ static void update_ble_devices_list(esp_bd_addr_t bd_addr, int rssi, int estimat
 
 static int find_device_index(esp_bd_addr_t bd_addr){
     for(int = 0; i < num_devices; i++){
-        if(memcmp(ble_devices[i].bd_addr, bd_addr, ESP_BD_ADDR_LEN)){
+        if(memcmp(ble_detected_devices[i].bd_addr, bd_addr, ESP_BD_ADDR_LEN)){
             return i; //Devuelve la posicion del dispositivo en la lista
         }
     }
@@ -503,7 +519,8 @@ static void forget_undetected_devices(){
     time_t current_time = time(NULL);
 
     for(int i = 0; i < num_devices; i++){
-        if(!ble_devices[i].in_room && (current_time - ble_devices[i].last_detection_time) > FORGET_THRESHOLD){
+        if(!ble_detected_devices[i].in_room && (current_time - ble_dble_detected_devicesevices[i].last_detection_time) > FORGET_THRESHOLD 
+                && !ble_devices[i].detected_in_last_scan){
             remove_device(i);
         }
     }
@@ -513,8 +530,8 @@ static void remove_device(int index){
     if(index < 0 || index >= num_devices){
         return;
     }
-    for(int i = index, i < num devices; i++){
-        ble_devices[i] = ble_devices[i + 1];
+    for(int i = index; i < num_devices; i++){
+        ble_detected_devices[i] = ble_detected_devices[i + 1];
     }
     num_devices--;
 }

@@ -53,4 +53,11 @@ Todos los parametros relativos a LWT y el timeout (keepalive) se configuran medi
 ## RPI-II
 1. 
 
+# Sprint 3
+## ANIOT
+1. 
+## RPI-I
+1. Estimacion del aforo mediante la utilizacion de la sala contando los dispositivos BLE usando GAP para escanear dichos dispositivos. A partir del RSSI de cada dispositivo se estima la distancia a la que está este. Se ha considerado utilizar una trilateracion 2D ( técnica geométrica que determina la posición de un objeto conociendo su distancia a tres puntos de referencia.) pero se ha decartado debido a que solo se conocen la situacion concreta de un ESP. Es por ello que se plantea utilizar una distancia arbitraria que sirva como umbral de referencia para determinar que dispositivo esta dentro y cual no. Se plantea utilizar un filtro de kalman para reducir el ruido ambiental y las interferencias que podrían afectar las mediciones de RSSI. La funcion de calculo de la distancia se ha tomado del siguiente documento: https://repositorio.unican.es/xmlui/bitstream/handle/10902/19626/428600.pdf?sequence=1 pagina 11
+## RPI-II
+1. 
 ## NOTAS
