@@ -1,11 +1,4 @@
-# Embed the server root certificate into the final binary
-<<<<<<< HEAD
-idf_build_get_property(project_dir PROJECT_DIR)
-idf_component_register(SRCS "scan_gap_ble.c" "station_example_main.c" "app_main.c" "wifi_provisioning.c"
+# Embed CA, certificate & key directly into binary
+idf_component_register(SRCS "coap_client_example_main.c"
                     INCLUDE_DIRS "."
-                    REQUIRES esp_wifi 
-                    )
-=======
-idf_component_register(SRCS "main.c"
-                    INCLUDE_DIRS ".")
->>>>>>> ANIOT
+                    EMBED_TXTFILES certs/coap_ca.pem certs/coap_client.crt certs/coap_client.key)
