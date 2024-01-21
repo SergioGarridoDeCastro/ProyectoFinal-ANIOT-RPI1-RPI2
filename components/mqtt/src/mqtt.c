@@ -42,7 +42,7 @@ extern const uint8_t mnode_cert_pem_end[]   asm("_binary_node_cert_pem_end");
 static void send_binary(esp_mqtt_client_handle_t cliente){
     esp_partition_mmap_handle_t out_handle;
     const void *binary_address;
-    cons esp_partition_t *partition;
+    const esp_partition_t *partition;
     esp_partition_mmap(partition, 0, partition->size, ESP_PARTITION_MMAP_DATA, &binary_address, &out_handle);
     // sending only the configured portion of the partition (if it's less than the partition size)
     int binary_size = MIN(CONFIG_BROKER_BIN_SIZE_TO_SEND, partition->size);
@@ -55,11 +55,11 @@ static void send_binary(esp_mqtt_client_handle_t cliente){
 //Funcion para manejar los comandos remotos a traves de MQTT
 static void handle_mqtt_configure(const char *topic, const char *datos){
     if(strcmp(topic, SAMPLING_FREQUENCY_TOPIC) == 0){     
-        (TAG, "Setting sampling frequency for topic %s to %f", topic, frequency);
+        (TAG, "Setting sampling frequency for topic %s to %f", topic, sampling_frequency);
         sscanf(datos, "%d", &sampling_frequency);
     }
     else if(strcmp(topic, PROVISIONING_TOPIC) == 0){ 
-        ESP_LOGI(TAG, "Provisioning node for topic %s to %f", topic, frequency);
+        ESP_LOGI(TAG, "Provisioning node for topic %s", topic);
         
     }
     else{
@@ -72,27 +72,19 @@ static void mqtt_configure_callback(const char *topic, const char *datos){
     handle_mqtt_configure(topic, datos);
 }
 
-//Funcion para notificar la de activación/caídas de nodos y otros eventos de interes
 static void notify_node_event(const char *event){
-    switch (event)
-    {
-    case "Node activated":
+    if (strcmp(event, "Node activated") == 0) {
         ESP_LOGI(TAG, "Node Event: %s", event);        
-        break;
-    case "Node disconnected":
+    } else if (strcmp(event, "Node disconnected") == 0) {
         ESP_LOGI(TAG, "Node Event: %s", event);
-        break;
-    case "Low battery":
+    } else if (strcmp(event, "Low battery") == 0) {
         ESP_LOGI(TAG, "Node Event: %s", event);
-        break;
-    case "Error reading sensor":
+    } else if (strcmp(event, "Error reading sensor") == 0) {
         ESP_LOGI(TAG, "Node Event: %s", event);
-        break;
-    case "CO2 high":
+    } else if (strcmp(event, "CO2 high") == 0) {
         ESP_LOGI(TAG, "Node Event: %s", event);
-        break;
-    default:
-        break;
+    } else {
+        // Caso por defecto o manejo de eventos adicionales
     }
 }
 
@@ -145,7 +137,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     esp_mqtt_client_handle_t client = event->client;
     int msg_id;
 
-    switch ((esp_mqtt_event_id_t)event_id){
+    switch ((esp_mqtt_event_id_t)){
         case MQTT_EVENT_CONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");

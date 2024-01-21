@@ -24,6 +24,7 @@
 #include <sys/time.h>
 #include <portmacro.h>
 #include <sntp.h>
+#include <esp_netif_sntp.h>
 
 static const char *TAG = "user_event_loops";
 
@@ -57,13 +58,14 @@ void states_machine()
     }
 }
 
-static void initialize_sntp(void){
+static int initialize_sntp(void){
         ESP_LOGI(TAG, "Initializing SNTP");
         esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("poolntp.org");
         config.timezone = 1; //UTC+1 para Madrid
         //config.smooth_sync = true;
         //config.sync_cb = time_sync_notification_cb;
         esp_netif_sntp_init(&config);
+        return ESP_OK;
 }
 
 static void obtain_time(void){
@@ -82,6 +84,13 @@ static void obtain_time(void){
     }
     time(&now);
     localtime_r(&now, &timeinfo);
+}
+
+// handler para el wifi disconected
+static void event_loop_task_mqtt(void* handler_args, esp_event_base_t base, int32_t id, void* event_data)
+{
+    ESP_LOGI(TAG, "SE LANZA EL EVENTO WIFI DESCONECTADO DESDE COMPONENT Y SE GUARDA EN LA COLA DE EVENTOS \n");
+    xQueueSend(callback_queue,&id,0);
 }
 
 void app_main(void)
