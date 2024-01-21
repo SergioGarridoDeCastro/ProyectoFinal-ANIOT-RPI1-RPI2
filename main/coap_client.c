@@ -12,6 +12,13 @@
 #include "esp_wifi.h"
 #include "esp_event.h"
 
+#include "mbedtls/ssl.h"
+#include "mbedtls/net.h"
+#include "mbedtls/error.h"
+#include "mbedtls/config.h"
+#include "mbedtls/platform.h"
+
+
 #include "nvs_flash.h"
 
 #include "protocol_examples_common.h"
@@ -23,49 +30,7 @@
 #error COAP_CLIENT_SUPPORT needs to be enabled
 #endif /* COAP_CLIENT_SUPPORT */
 
-int flags = 0;
-
-static unsigned char _token_data[8];
-coap_binary_t base_token = { 0, _token_data };
-
-typedef struct {
-  coap_binary_t *token;
-  int observe;
-} track_token;
-
-track_token *tracked_tokens = NULL;
-size_t tracked_tokens_count = 0;
-
 #define COAP_DEFAULT_TIME_SEC 60
-
-static coap_optlist_t *optlist = NULL;
-
-static coap_uri_t uri;
-static coap_uri_t proxy = { {0, NULL}, 0, {0, NULL}, {0, NULL}, 0 };
-static int proxy_scheme_option = 0;
-static int uri_host_option = 0;
-static unsigned int ping_seconds = 0;
-
-#define REPEAT_DELAY_MS 1000
-static size_t repeat_count = 1;
-
-static int ready = 0;
-
-/* processing a block response when this flag is set */
-static int doing_getting_block = 0;
-static int single_block_requested = 0;
-static uint32_t block_mode = COAP_BLOCK_USE_LIBCOAP;
-
-static coap_string_t output_file = { 0, NULL };   /* output file name */
-static FILE *file = NULL;               /* output file stream */
-
-static coap_string_t payload = { 0, NULL };       /* optional payload to send */
-
-static int reliable = 0;
-
-static int add_nl = 0;
-static int is_mcast = 0;
-static uint32_t csm_max_message_size = 0;
 
 /* The examples use simple Pre-Shared-Key configuration that you can set via
    'idf.py menuconfig'.
@@ -80,13 +45,74 @@ static uint32_t csm_max_message_size = 0;
 #define EXAMPLE_COAP_PSK_KEY CONFIG_EXAMPLE_COAP_PSK_KEY
 #define EXAMPLE_COAP_PSK_IDENTITY CONFIG_EXAMPLE_COAP_PSK_IDENTITY
 
-/* The examples use uri Logging Level that
-   you can set via 'idf.py menuconfig'.
+/* Recuerda reemplazar thingsboard_cert, thingsboard_cert_len, 
+thingsboard_server_url y thingsboard_server_port con los valores correspondientes a la configuracion de alejandro configuración. */
 
-   If you'd rather not, just change the below entry to a value
-   that is between 0 and 7 with
-   the config you want - ie #define EXAMPLE_COAP_LOG_DEFAULT_LEVEL 7
-*/
+// Configurar la conexión segura
+mbedtls_ssl_context ssl;
+mbedtls_ssl_config conf;
+mbedtls_net_context server_fd;
+mbedtls_entropy_context entropy;
+mbedtls_ctr_drbg_context ctr_drbg;
+mbedtls_x509_crt cacert;
+
+// Inicializar las estructuras y configuraciones necesarias
+mbedtls_ssl_init(&ssl);
+mbedtls_ssl_config_init(&conf);
+mbedtls_net_init(&server_fd);
+mbedtls_entropy_init(&entropy);
+mbedtls_ctr_drbg_init(&ctr_drbg);
+mbedtls_x509_crt_init(&cacert);
+
+// Configurar la semilla para el generador de números aleatorios
+mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0);
+
+// Cargar los certificados del servidor ThingsBoard
+mbedtls_x509_crt_parse(&cacert, (const unsigned char *)thingsboard_cert, thingsboard_cert_len);
+
+// Configurar la conexión segura
+mbedtls_ssl_config_defaults(&conf, MBEDTLS_SSL_IS_CLIENT, MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT);
+mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_REQUIRED);
+mbedtls_ssl_conf_ca_chain(&conf, &cacert, NULL);
+mbedtls_ssl_conf_rng(&conf, mbedtls_ctr_drbg_random, &ctr_drbg);
+
+// Establecer la conexión con el servidor ThingsBoard
+mbedtls_net_connect(&server_fd, thingsboard_server_url, thingsboard_server_port, MBEDTLS_NET_PROTO_TCP);
+mbedtls_ssl_setup(&ssl, &conf);
+mbedtls_ssl_set_hostname(&ssl, thingsboard_server_url);
+mbedtls_ssl_set_bio(&ssl, &server_fd, mbedtls_net_send, mbedtls_net_recv, NULL);
+
+// Realizar el handshake SSL/TLS
+while ((ret = mbedtls_ssl_handshake(&ssl)) != 0) {
+    if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+        // Error en el handshake
+        mbedtls_strerror(ret, error_buf, sizeof(error_buf));
+        printf("Error en el handshake: %s\n", error_buf);
+        break;
+    }
+}
+
+// Verificar el resultado del handshake
+if (ret == 0) {
+    printf("Handshake exitoso\n");
+
+    // Envía los datos al servidor ThingsBoard
+    mbedtls_ssl_write(&ssl, data, data_len);
+} else {
+    // Error en el handshake
+    mbedtls_strerror(ret, error_buf, sizeof(error_buf));
+    printf("Error en el handshake: %s\n", error_buf);
+}
+
+// Cerrar la conexión segura
+mbedtls_ssl_close_notify(&ssl);
+mbedtls_net_free(&server_fd);
+mbedtls_ssl_free(&ssl);
+mbedtls_ssl_config_free(&conf);
+mbedtls_ctr_drbg_free(&ctr_drbg);
+mbedtls_entropy_free(&entropy);
+mbedtls_x509_crt_free(&cacert);
+
 #define EXAMPLE_COAP_LOG_DEFAULT_LEVEL CONFIG_COAP_LOG_DEFAULT_LEVEL
 
 /* The examples use uri "coap://californium.eclipseprojects.io" that
@@ -456,21 +482,9 @@ static void coap_example_client(void *p)
             ESP_LOGE(TAG, "coap_new_pdu() failed");
             goto clean_up;
         }
-
-        char* sensor_data_sgp30 = get_sensor_sgp30_data();
-        char* sensor_data_si7021 = get_sensor_si7021_data();
-        char* post_data = (char*)malloc(strlen(sensor_data_sgp30) + strlen(sensor_data_si7021) + 10);
-        sprintf(post_data, "%s,%s", sensor_data_sgp30, sensor_data_si7021); 
-
-        coap_add_data(request, strlen(post_data), (const unsigned char *)post_data);
-
         /* Add in an unique token */
         coap_session_new_token(session, &tokenlength, token);
         coap_add_token(request, tokenlength, token);
-        coap_add_optlist_pdu(request, &optlist);
-
-        resp_wait = 1;
-        coap_send(session, request);
 
         /*
          * To make this a POST, you will need to do the following
