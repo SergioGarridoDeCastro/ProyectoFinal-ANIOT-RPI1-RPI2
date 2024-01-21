@@ -30,7 +30,7 @@
 #define SCAN_DURATION       10    // Duración del escaneo en segundos
 #define RSSI_THRESHOLD      -70   // Umbral RSSI para filtrar dispositivos lejanos
 #define MAX_DEVICES         10    // Máximo número de dispositivos que se pueden manejar
-#define MAX_DISTANCE_THRESHOLD 40 // Umbral de distancia 
+#define MAX_DISTANCE_THRESHOLD 5 // Umbral de distancia para determinar si un dispositivo esta en una habitacion o no
 #define FORGET_THRESHOLD  500     // Tiempo en segundos para considerar un dispositivo como "olvidado"
 #define D_0                 1     // Distancia de referencia para el calculo de una distancia
 #define RSSI_0              -50.0 // RSSI de referencia 
@@ -404,7 +404,7 @@ static void esp_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_
                         ESP_LOGI(GATTC_TAG,"Updating list of devices");
                         //Actualizar la lista de dispositivos BLE cercanos 
                         update_ble_devices_list(scan_result->scan_rst.bda, scan_result->scan_rst.rssi, estimated_distance);
-                        ESP_LOGI(GATTC_TAG,"Updating list of devices");
+                        ESP_LOGI(GATTC_TAG,"Device is in room");
 
 
                         connect = true;
@@ -479,8 +479,9 @@ static void trilateration2d_ble(beacon_t ){
 //Funcion de estimacion de distancia con RSSI. La distancia devuelta esta expresada en metros.
 static double estimate_distance(int rssi){
     //Referencia de la formula: https://repositorio.unican.es/xmlui/bitstream/handle/10902/19626/428600.pdf?sequence=1 pagina 11
-    double n = (RSSI_0 - rssi)/(10*log(D_0));
-    double distancia = pow(10,(RSSI_0 - rssi)/(10*n));
+    int rssi_filtered = kalman_filter(rssi);
+    double n = (RSSI_0 - rssi_filtered)/(10*log(D_0));
+    double distancia = pow(10,(RSSI_0 - rssi_filtered)/(10*n));
     return distancia; 
 }
 
@@ -489,9 +490,26 @@ static void update_capacity(){
 }
 
 //Se aplica el filtro de kalman posteriormente a cada medida debido a la naturaleza dinamica 
-static double kalman_filter(){
+static double kalman_filter(int rssi){
+    //Prediccion del estado
+    double kalman_prediction = kalman_estimate;
 
+    //Calculo del error de de la prediccion 
+    double kalman_error_prediction = kalman_error_estimate + kalman_process_noise;
+
+    //Ganancia de Kalman
+    kalman_gain = kalman_error_prediction / (kalman_error_prediction + RSSI_MEASUREMENT_ERROR);
+
+    //Correcion del estado
+    kalman_estimate = kalman_prediction + kalman_gain * (rssi - kalman_prediction);
+
+    //Actualizacion del error del estado 
+    kalman_error_estimate = (1.0 - kalman_gain) * kalman_error_prediction;
+
+    return kalman_estimate;
 }
+
+
 
 //Funcion para actualizar la lista de dispositivos detectados
 static void update_ble_devices_list(esp_bd_addr_t bd_addr, int rssi, int estimated_distance){
@@ -501,15 +519,18 @@ static void update_ble_devices_list(esp_bd_addr_t bd_addr, int rssi, int estimat
     if(index_device == -1){
         //Actualiza la informacion del dispositivo existente
         ble_detected_devices[index_device].rssi = rssi;
-        ble_detected_devices[index_device].is_in_room = estimated_distance < MAX_DISTANCE_THRESHOLD;  // Define tu umbral de distancia
+        ble_detected_devices[index_device].is_in_room = estimated_distance < MAX_DISTANCE_THRESHOLD;  //Indica si el dispositivo esta dentro de la sala
         ble_detected_devices[index_device].last_detection_time = time(NULL);
         ble_detected_devices[index_device].detected_in_last_scan = true;
+
+        ESP_LOGI(GATTC_TAG, "Device is in room: %s", ble_detected_devices[index_device].is_in_room:?"true":"false");
     }
     else{
         if(num_devices < MAX_DEVICES){
             ble_detected_devices[num_devices].rssi = rssi;
             ble_detected_devices[num_devices].is_in_room = estimated_distance < MAX_DISTANCE_THRESHOLD;
             ble_detected_devices[index_device].detected_in_last_scan = true;
+            ESP_LOGI(GATTC_TAG, "Device is in room: %s", ble_detected_devices[index_device].is_in_room:?"true":"false");
 
             memcpy(ble_detected_devices[num_devices].bd_addr, bd_addr, ESP_BD_ADDR_LEN);
             ble_detected_devices[num_devices].last_detection_time = time(NULL);
