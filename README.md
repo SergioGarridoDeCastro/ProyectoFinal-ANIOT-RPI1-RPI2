@@ -61,3 +61,4 @@ Todos los parametros relativos a LWT y el timeout (keepalive) se configuran medi
 ## RPI-II
 1. 
 ## NOTAS
+1. En el componente MQTT se decide que los datos que recoge el sensor SGP30 se representen como CJSON y los datos que recoge el sensor Si7021 se representen como CBOR antes de publicarlos en el broker. La razon de la eleccion de CBOR en los datos del sensor Si7021 es que se considera CBOR es un formato de representación más compacto y que al recoger el sensor datos de temperatura y humedad tiene más sentido enviarlos más compactos de cara a ahorrar ancho de banda.

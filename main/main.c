@@ -28,17 +28,24 @@
 
 static const char *TAG = "user_event_loops";
 
-
 //Definicion de la maquina de estados 
 typedef enum{
     STATE_INIT,
     STATE_MONITORITATION,
+    STATE_TRANSMISION,
     STATE_LOW_POWER,
     STATE_OTA
 }state_machine_t;
 
 //El estado inicial se considera STATE_INIT
 static state_machine_t current_state = STATE_INIT;
+
+esp_event_loop_handle_t loop_with_task;
+esp_event_loop_handle_t loop_without_task;
+esp_event_loop_handle_t loop_monitor_main;
+esp_event_loop_handle_t loop_wifi;
+
+
 
 //Handler para la monitorizacion
 void monitorize_handler(void *handler_arg, esp_event_base_t base, int32_t id, void *event_data)
@@ -64,7 +71,11 @@ static int initialize_sntp(void){
         config.timezone = 1; //UTC+1 para Madrid
         //config.smooth_sync = true;
         //config.sync_cb = time_sync_notification_cb;
-        esp_netif_sntp_init(&config);
+        esp_err_t sntp_init_result = esp_netif_sntp_init(&config);
+        if(sntp_init_result != ESP_OK){
+            ESP_LOGE(TAG, "SNTP initialization failed with error %d", sntp_init_result);
+            return sntp_init_result;
+        }
         return ESP_OK;
 }
 
@@ -86,16 +97,38 @@ static void obtain_time(void){
     localtime_r(&now, &timeinfo);
 }
 
+/*
 // handler para el wifi disconected
 static void event_loop_task_mqtt(void* handler_args, esp_event_base_t base, int32_t id, void* event_data)
 {
     ESP_LOGI(TAG, "SE LANZA EL EVENTO WIFI DESCONECTADO DESDE COMPONENT Y SE GUARDA EN LA COLA DE EVENTOS \n");
     xQueueSend(callback_queue,&id,0);
+}*/
+
+void init_machine(){
+    switch(current_state){
+        case STATE_INIT:
+            break;
+        case STATE_OTA:
+            break;
+        case STATE_MONITORITATION:
+            break;
+        case STATE_LOW_POWER:
+            break;
+        case STATE_TRANSMISION:
+            break;
+    }
 }
 
 void app_main(void)
 {
+    //Iniciar OTA    
+
     ESP_LOGI(TAG, "setting up");
+    int64_t t_after_us;
+    int64_t time_sleep;
+    double temp;
+
     // init temperature controller
     i2c_master_init();
     ESP_ERROR_CHECK(esp_event_loop_create_default());
@@ -121,6 +154,9 @@ void app_main(void)
         obtain_time();
         time(&now);
     }
+
+    //Inicializa el servidor REST
+    ESP_ERROR_CHECK(start_rest_server(CONFIG_EXAMPLE_WEB_MOUNT_POINT));
 
     ESP_ERROR_CHECK(err);
     muestradora(1000000);

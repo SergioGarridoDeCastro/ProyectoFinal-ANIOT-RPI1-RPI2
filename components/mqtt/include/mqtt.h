@@ -2,8 +2,6 @@
 #include "cJSON.h"
 #include <stdint.h>
 
-static const char *TAG = "MQTT";
-
 
 const char *lwt_topic; //topic del mensaje LWT (Last Will and Testament)
 const char *lwt_msg; //contenido del mensaje LWT.

@@ -97,3 +97,20 @@ menu "Provisioning Configuration"
         help
             This enables BLE 4.2 features for Bluedroid.
 endmenu
+
+menu "Transport Protocol"
+    choice EXAMPLE_PROV_MODE
+        bool "Transport Protocol"
+        default MQTT_PROTOCOL if IDF_TARGET_ESP32S2
+        default COAP_PROTOCOL
+        help
+            Wi-Fi provisioning component offers both, SoftAP and BLE transports. Choose any one.
+
+        config MQTT_PROTOCOL
+            bool "MQTT"
+            select BT_ENABLED
+            depends on !IDF_TARGET_ESP32S2
+        config COAP_PROTOCOL
+            bool "COAP"
+    endchoice
+endmenu

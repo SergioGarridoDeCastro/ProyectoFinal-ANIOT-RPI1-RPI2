@@ -31,6 +31,8 @@ static int sampling_frequency = 30;
 #define PROVISIONING_TOPIC "v1/gateway/control/node_provisioning"
 #define SAMPLING_FREQUENCY_TOPIC "v1/gateway/configure/frequency"
 
+static const char *TAG = "MQTT";
+
 //Para añadir SSL/TLS sobre MQTT
 #if CONFIG_BROKER_CERTIFICATE_OVERRIDDEN == 1
 static const uint8_t node_cert_pem_start[]  = "-----BEGIN CERTIFICATE-----\n" CONFIG_BROKER_CERTIFICATE_OVERRIDE "\n-----END CERTIFICATE-----";
@@ -102,20 +104,40 @@ static void topic_control_callback(const char *topic, const char *payload){
 /***
  * Funcion para publicar los datos del sensor SGP30
 */
-static void publish_data_sgp30(int piso, int aula, int numero, cJSON valor_sensor){
+static void publish_data_sgp30(int piso, int aula, int numero, cJSON *valor_sensor){
     char topic[100];
     snprintf(topic, sizeof(topic), "facultad_informatica/piso_%d/aula_%d/%d/SGP30", piso, aula, numero);
-    esp_mqtt_client_publish(mqtt_client,(const char *) topic, (const char *) &valor_sensor,  0, CONFIG_QOS_MQTT, 0);
-    esp_mqtt_client_publish(mqtt_client,(const char *) topic, (const char *) &valor_sensor,  0, CONFIG_QOS_MQTT, 0);
+
+    // Convertir el objeto cJSON a una cadena de caracteres
+    char *json_data = cJSON_PrintUnformatted(valor_sensor);
+    if (json_data != NULL) {
+        // Publicar los datos JSON directamente
+        esp_mqtt_client_publish(mqtt_client, (const char *)topic, json_data, 0, CONFIG_QOS_MQTT, CONFIG_RETAIN_MQTT);
+
+        // Liberar la memoria asignada por cJSON_PrintUnformatted
+        free(json_data);
+    } else {
+        ESP_LOGE(TAG, "Error al convertir");
+    }
 }
 
 /***
  * Funcion para publicar los datos del sensor Si7021
 */
-static void publish_data_si7021(int piso, int aula, int numero, cJSON valor_sensor){
+static void publish_data_si7021(int piso, int aula, int numero, CborValue valor_sensor){
     char topic[100];
     snprintf(topic, sizeof(topic), "facultad_informatica/piso_%d/aula_%d/%d/Si7021", piso, aula, numero);
-    esp_mqtt_client_publish(mqtt_client,(const char *) topic, (const char *) &valor_sensor, 0, 1, 0);
+    // Crear un búfer para almacenar el CBOR serializado
+    uint8_t cbor_buffer[512];  // Ajusta el tamaño según tus necesidades
+
+    // Crear un objeto CBOR en el búfer
+    CborEncoder encoder;
+    cbor_encoder_init(&encoder, cbor_buffer, sizeof(cbor_buffer), 0);
+    cbor_encode_value(&encoder, valor_sensor);
+
+    // Obtener el tamaño del CBOR serializado
+    size_t cbor_size = cbor_encoder_get_buffer_size(&encoder, cbor_buffer);
+    esp_mqtt_client_publish(mqtt_client,(const char *) topic, (const char *) &cbor_buffer, cbor_size, CONFIG_QOS_MQTT, CONFIG_RETAIN_MQTT);
 }
 
 static void publish_lwt(void){
