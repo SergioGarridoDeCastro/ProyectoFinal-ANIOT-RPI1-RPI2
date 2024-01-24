@@ -47,6 +47,7 @@ Todos los parametros relativos a LWT y el timeout (keepalive) se configuran medi
 # Sprint 2
 ## ANIOT
 1. Actualizacion del reloj de la placa por medio de SNTP
+2. La estrategia de provisioning escogida es la proporcionada por Thingsboard. A traves de MQTT se envia un fichero JSON con un token unico para todos los nodos para que Thingsboard reconozca al nodo dentro de un grupo de nodos. A esto Thingsboard contestara con un JSON donde se incluye un token exlusivo para el nodo que se utilizara para autentificarse en distintas conexiones a Thingsboard como puede ser en el caso de OTA
 ## RPI-I
 1. Provisionamiento del nodo por WiFi utilizando la aplicación móvil de Espressif. Al nodo se le propocionan el SSID y el password de la red a la que ha de conectarse.
 2. Utilización de los modos de bajo consumo de la WiFi para ahorrar energia cuando no se envie nada desde el nodo.

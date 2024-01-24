@@ -149,6 +149,7 @@ void app_main(void)
         err = nvs_flash_init();
     }
 
+    //Nota: No funciona con Eduroam
     time_t now;
     struct tm *timeinfo;
     time(&now);
@@ -159,6 +160,19 @@ void app_main(void)
         obtain_time();
         time(&now);
     }
+    //Provisionamiento WiFi
+    init_ap_wifi(); //¿Crear tarea?
+
+    //Provisionamiento
+    init_publisher_mqtt();
+
+    //OTA
+
+    //Escaneo BLE periodicamente
+
+    //Monitorizacion periodicamente
+
+    //Envio de datos periodicamente
 
     //Inicializa el servidor REST
     //ESP_ERROR_CHECK(start_rest_server(CONFIG_EXAMPLE_WEB_MOUNT_POINT));
