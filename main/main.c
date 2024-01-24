@@ -26,6 +26,9 @@
 #include <sntp.h>
 #include <esp_netif_sntp.h>
 #include <esp_err.h>
+#include "scan_gap_ble.h"
+#include "mqtt.h"
+
 
 static const char *TAG = "user_event_loops";
 
@@ -47,15 +50,30 @@ esp_event_loop_handle_t loop_with_task;
 esp_event_loop_handle_t loop_without_task;
 esp_event_loop_handle_t loop_monitor_main;
 esp_event_loop_handle_t loop_wifi;
+esp_event_loop_handle_t loop_scan_ble;
+
+QueueHandle_t callback_queue;
+QueueHandle_t temperature_queue;
 
 
+//Variables para topics MQTT
+int piso;
+int aula;
+int numero;
+cJSON *valor_sgp30;
+CborValue valor_si7021;
+
+//Variables datos muestreados
+float temperature;
+float humidity;
+float co2;
 
 //Handler para la monitorizacion
 void monitorize_handler(void *handler_arg, esp_event_base_t base, int32_t id, void *event_data)
 {
     char msg[64];
-    float temp = *((float *)(event_data));
-    snprintf(msg, sizeof msg, "%f", temp);
+    temperature = *((float *)(event_data));
+    snprintf(msg, sizeof msg, "%f", temperature);
     ESP_LOGI(TAG, "Temp %s", msg);
 }
 
@@ -110,17 +128,91 @@ static void event_loop_task_mqtt(void* handler_args, esp_event_base_t base, int3
     xQueueSend(callback_queue,&id,0);
 }*/
 
+//
+static void mqtt_transport_data_task(){
+    piso = CONFIG_PISO_NODO;
+    aula = CONFIG_AULA_NODO;
+    numero = CONFIG_NUMERO_NODO;
+
+    valor_sgp30 = cJSON_CreateNumber(co2);
+
+    // Crear un objeto CBOR 
+    CborEncoder encoder;
+    CborEncoder mapEncoder;
+    uint8_t cborBuffer[64];  // Ajusta el tamaño según tus necesidades
+
+    // Inicializar el codificador CBOR
+    cbor_encoder_init(&encoder, cborBuffer, sizeof(cborBuffer), 0);
+    cbor_encoder_create_map(&encoder, &mapEncoder, 2);
+    cbor_encode_text_stringz(&mapEncoder, "Temperature");
+    cbor_encode_float(&mapEncoder, temperature);
+
+    cbor_encode_text_stringz(&mapEncoder, "Humidity");
+    cbor_encode_float(&mapEncoder, humidity);
+
+    // Finalizar la codificación del mapa CBOR
+    cbor_encoder_close_container(&encoder, &mapEncoder);
+
+    // Obtener el tamaño del objeto CBOR serializado
+    size_t cborSize = cbor_encoder_get_buffer_size(&encoder, cborBuffer);
+
+    // Asignar el mapa CBOR al objeto CborValue
+    cbor_value_advance_fixed(&valor_si7021);  // Mueve el CborValue al siguiente valor
+    cbor_value_enter_container(&valor_si7021, &mapEncoder);
+
+    publish_data_sgp30(piso, aula, numero, valor_sgp30);
+    publish_data_si7021(piso, aula, numero, valor_si7021);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+}
+
+static void provisioning_task(){
+    init_ap_wifi();
+    init_publisher_mqtt(); //Inicia el provisionamiento
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+}
+
+// handler para el wifi conectado
+static void event_loop_task_scan_ble(void* handler_args, esp_event_base_t base, int32_t id, void* event_data)
+{
+    
+    //float sensor_temperature = *((float*) event_data);
+
+    char* loop;
+
+    if (handler_args == loop_scan_ble) {
+        loop = "loop_with_task";
+    } else {
+        loop = "loop_without_task";
+    }
+
+    ESP_LOGI(TAG, "SE LANZA EL EVENTO WIFI CONECTADO DESDE COMPONENT Y SE GUARDA EN LA COLA DE EVENTOS \n");
+    //xQueueSend(temperature_queue,&sensor_temperature,0);
+    xQueueSend(callback_queue,&id,0);
+
+}
+
 void init_machine(){
+    loop_scan_ble = init_ble();
+    ESP_ERROR_CHECK(esp_event_handler_register_with(loop_scan_ble, SCAN_BLE, SCAN_BLE_EVENT_DEVICE_FOUND, event_loop_task_scan_ble, loop_scan_ble));
+
     switch(current_state){
         case STATE_INIT:
+            xTaskCreate(provisioning_task, "provisioning", 4096, NULL, tskIDLE_PRIORITY, NULL);
             break;
         case STATE_OTA:
             break;
         case STATE_MONITORITATION:
+
             break;
         case STATE_LOW_POWER:
+
             break;
         case STATE_TRANSMISION:
+#ifdef CONFIG_PROTCOL_TRANSPORT_MQTT_PROTOCOL
+            xTaskCreate(mqtt_transport_data_task, "mqtt_transport_data_task", 4096, NULL, tskIDLE_PRIORITY, NULL);
+#elif  CONFIG_PROTCOL_TRANSPORT_COAP_PROTOCOL
+            xTaskCreate(mqtt_transport_data_task, "mqtt_transport_data_task", 4096, NULL, tskIDLE_PRIORITY, NULL);
+#endif
             break;
     }
 }

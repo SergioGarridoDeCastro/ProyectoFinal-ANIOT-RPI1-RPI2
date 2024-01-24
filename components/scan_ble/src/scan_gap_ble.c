@@ -26,6 +26,11 @@
 #include "esp_log.h"
 #include <esp_gatt_defs.h>
 #include <esp_gattc_api.h>
+#include <esp_event_base.h>
+#include <esp_bt.h>
+#include <esp_event.h>
+#include <esp_timer.h>
+#include "scan_gap_ble.h"
 
 #define GATTC_TAG "GATTC_CLIENT"
 #define REMOTE_SERVICE_UUID        0x00FF
@@ -43,6 +48,11 @@
 #define RSSI_0              -50.0 // RSSI de referencia 
 #define RSSI_MEASUREMENT_ERROR 1.0 //Valor inicial
 
+// Define event base
+ESP_EVENT_DEFINE_BASE(SCAN_BLE);
+esp_event_loop_handle_t loop_scan;
+// Define timers
+esp_timer_handle_t scan_timer = 10 * 10000; //Expresado en ms
 
 //Variables globales y definicion de funciones sacadas del ejemplo del cliente GATT
 static const char remote_device_name[] = "ESP_GATTS_DEMO";
@@ -388,6 +398,10 @@ static void esp_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_
                                                 ESP_BLE_AD_TYPE_NAME_CMPL, &adv_name_len);
             ESP_LOGI(GATTC_TAG, "searched Device Name Len %d", adv_name_len);
             esp_log_buffer_char(GATTC_TAG, adv_name, adv_name_len);
+            // Llamada al event loop 
+            if (loop_scan != NULL) {
+                esp_event_post_to(loop_scan, SCAN_BLE, SCAN_BLE_EVENT_DEVICE_FOUND, NULL, 0, portMAX_DELAY);
+            }
 
 #if CONFIG_EXAMPLE_DUMP_ADV_DATA_AND_SCAN_RESP
             if (scan_result->scan_rst.adv_data_len > 0) {
@@ -460,29 +474,12 @@ static void esp_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_
     }
 }
 
-
-/*esp_err_t esp_ble_gap_register_callback(esp_gap_ble_cb_t callback){
-    if (esp_bluedroid_get_status() == ESP_BLUEDROID_STATUS_UNINITIALIZED) {
-        return ESP_ERR_INVALID_STATE;
-    }
-    return (btc_profile_cb_set(BTC_PID_GAP_BLE, callback) == 0 ? ESP_OK : ESP_FAIL);
-}
-
-
-static void process_scan_result(esp_ble_gap_cb_param_t* scan_result){
-  
-
-}*/
-
 /**
  * Idea para posicionamiento Bluetooth -> Trilateracion o triangulacion por medio de beacons BLE 
  * Referencia: https://journals.sagepub.com/doi/pdf/10.1177/1550147716671720
-*/
-
 static void trilateration2d_ble(beacon_t ){
 
-}
-
+}*/
 
 //Funcion de estimacion de distancia con RSSI. La distancia devuelta esta expresada en metros.
 static double estimate_distance(int rssi){
@@ -491,10 +488,6 @@ static double estimate_distance(int rssi){
     double n = (RSSI_0 - rssi_filtered)/(10*log(D_0));
     double distancia = pow(10,(RSSI_0 - rssi_filtered)/(10*n));
     return distancia; 
-}
-
-static void update_capacity(){
-
 }
 
 //Se aplica el filtro de kalman posteriormente a cada medida debido a la naturaleza dinamica 
@@ -577,4 +570,77 @@ static void remove_device(int index){
         ble_detected_devices[i] = ble_detected_devices[i + 1];
     }
     num_devices--;
+}
+
+static void scan_timer_callback(void *arg){
+    ESP_LOGI(GATTCTAG, "Device detected on scan");
+    //wifi_state = CONNECTED_WITH_IP;
+    esp_event_post_to(loop_scan, SCAN_BLE, SCAN_BLE_EVENT_DEVICE_FOUND, NULL, 0, portMAX_DELAY);
+    esp_timer_stop(scan_timer);
+}
+
+esp_event_loop_handle_t void init_ble(){
+    ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT));
+    esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+    esp_err_t ret = esp_bt_controller_init(&bt_cfg);
+    if (ret) {
+        ESP_LOGE(GATTC_TAG, "%s initialize controller failed: %s\n", __func__, esp_err_to_name(ret));
+        return;
+    }
+
+    ret = esp_bt_controller_enable(ESP_BT_MODE_BLE);
+    if (ret) {
+        ESP_LOGE(GATTC_TAG, "%s enable controller failed: %s\n", __func__, esp_err_to_name(ret));
+        return;
+    }
+
+    ret = esp_bluedroid_init();
+    if (ret) {
+        ESP_LOGE(GATTC_TAG, "%s init bluetooth failed: %s\n", __func__, esp_err_to_name(ret));
+        return;
+    }
+
+    ret = esp_bluedroid_enable();
+    if (ret) {
+        ESP_LOGE(GATTC_TAG, "%s enable bluetooth failed: %s\n", __func__, esp_err_to_name(ret));
+        return;
+    }
+
+    //register the  callback function to the gap module
+    ret = esp_ble_gap_register_callback(esp_gap_callback);
+    if (ret){
+        ESP_LOGE(GATTC_TAG, "%s gap register failed, error code = %x\n", __func__, ret);
+        return;
+    }
+
+    //register the callback function to the gattc module
+    ret = esp_ble_gattc_register_callback(esp_gattc_cb);
+    if(ret){
+        ESP_LOGE(GATTC_TAG, "%s gattc register failed, error code = %x\n", __func__, ret);
+        return;
+    }
+
+    ret = esp_ble_gattc_app_register(PROFILE_A_APP_ID);
+    if (ret){
+        ESP_LOGE(GATTC_TAG, "%s gattc app register failed, error code = %x\n", __func__, ret);
+    }
+    esp_err_t local_mtu_ret = esp_ble_gatt_set_local_mtu(500);
+    if (local_mtu_ret){
+        ESP_LOGE(GATTC_TAG, "set local  MTU failed, error code = %x", local_mtu_ret);
+    }
+
+    //Creacion del event_loop
+    esp_event_loop_args_t loop_args = {
+        .queue_size = 10,  // Tamaño de la cola de eventos
+        .task_name = "ble_event_loop",
+    };
+
+    ESP_ERROR_CHECK(esp_event_loop_create(&loop_args, &loop_scan));
+
+    const esp_timer_create_args_t scan_timer_args = {
+        .callback = &scan_timer_callback,
+        .name = "ip"};
+    esp_timer_create(&scan_timer_args, &scan_timer);
+
+    return loop_scan;
 }
