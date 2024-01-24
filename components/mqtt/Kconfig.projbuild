@@ -57,7 +57,7 @@ menu "MQTT Configuration"
         help
             QoS de cada mensaje
 
-    config RETAIN_RETAIN
+    config RETAIN_MQTT
         int "Retain"
         default 1
         help
@@ -79,6 +79,12 @@ menu "MQTT Configuration"
         # Here we configure the data size to send and to be expected in the python script
         int
         default 20000
+
+    config RECONNECT_TIMEOUT
+        int 
+        default 5
+        help 
+            Tiempo de reconexion
 
 endmenu
 

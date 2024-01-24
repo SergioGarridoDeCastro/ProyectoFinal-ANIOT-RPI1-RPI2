@@ -179,7 +179,7 @@ static void publish_data_si7021(int piso, int aula, int numero, CborValue valor_
     // Crear un objeto CBOR en el búfer
     CborEncoder encoder;
     cbor_encoder_init(&encoder, cbor_buffer, sizeof(cbor_buffer), 0);
-    cbor_encode_value(&encoder, valor_sensor);
+    cbor_encode_(&encoder, valor_sensor);
 
     // Obtener el tamaño del CBOR serializado
     size_t cbor_size = cbor_encoder_get_buffer_size(&encoder, cbor_buffer);
@@ -205,7 +205,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     esp_mqtt_client_handle_t client = event->client;
     int msg_id;
 
-    switch ((esp_mqtt_event_id_t)){
+    switch ((event_id)){
         case MQTT_EVENT_CONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
@@ -277,8 +277,8 @@ void init_publisher_mqtt (void){
         .credentials.username = CONFIG_MQTT_USERNAME,
         .credentials.authentication.password = CONFIG_MQTT_PASSWORD,
         .network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
-        .transport = MQTT_TRANSPORT_OVER_SSL, // Habilita el transporte seguro
-        .cert_pem = node_cert_pem_start /* Certificado PEM para la conexión segura */,
+        .network.transport = MQTT_TRANSPORT_OVER_SSL, // Habilita el transporte seguro
+        .credentials.authentication.certificate = node_cert_pem_start /* Certificado PEM para la conexión segura */,
         //.client_cert_pem = (const unsigned char *) node_cert_pem_start,
         //.client_key_pem = (const unsigned char *)node_key_pem_start
     };
@@ -286,7 +286,7 @@ void init_publisher_mqtt (void){
 #if CONFIG_BROKER_URL_FROM_STDIN
     char line[128];
 
-    if (strcmp(mqtt_cfg.broker.address.uri, "FROM_STDIN") == 0) {
+    if (strcmp(mqtt_config.broker.address.uri, "FROM_STDIN") == 0) {
         int count = 0;
         printf("Please enter url of mqtt broker\n");
         while (count < 128) {
@@ -300,7 +300,7 @@ void init_publisher_mqtt (void){
             }
             vTaskDelay(10 / portTICK_PERIOD_MS);
         }
-        mqtt_cfg.broker.address.uri = line;
+        mqtt_config.broker.address.uri = line;
         printf("Broker url: %s\n", line);
     } else {
         ESP_LOGE(TAG, "Configuration mismatch: wrong broker url");
