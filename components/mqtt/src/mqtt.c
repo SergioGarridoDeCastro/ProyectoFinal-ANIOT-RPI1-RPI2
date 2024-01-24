@@ -27,6 +27,8 @@
 
 static esp_mqtt_client_handle_t mqtt_client;
 static int sampling_frequency = 30;
+static bool is_provisioned = false;
+const char *access_token;
 
 #define PROVISIONING_TOPIC "v1/gateway/control/node_provisioning"
 #define SAMPLING_FREQUENCY_TOPIC "v1/gateway/configure/frequency"
@@ -60,10 +62,6 @@ static void handle_mqtt_configure(const char *topic, const char *datos){
         (TAG, "Setting sampling frequency for topic %s to %f", topic, sampling_frequency);
         sscanf(datos, "%d", &sampling_frequency);
     }
-    else if(strcmp(topic, PROVISIONING_TOPIC) == 0){ 
-        ESP_LOGI(TAG, "Provisioning node for topic %s", topic);
-        
-    }
     else{
 
     }
@@ -90,15 +88,63 @@ static void notify_node_event(const char *event){
     }
 }
 
-/***
- * Funcion para suscribirse al topic de control
+/**
+ * Funcion para suscribirse al topic de provisionamiento
 */
-static void suscribe_topic_control(){
-    esp_mqtt_client_subscribe(mqtt_client, PROVISIONING_TOPIC, 0);
+static void suscribe_topic_provisioning(){
+    esp_mqtt_client_subscribe(mqtt_client, PROVISIONING_TOPIC, CONFIG_QOS_MQTT);
 }
 
-static void topic_control_callback(const char *topic, const char *payload){
-    
+/**
+ * Funcion para provisionamiento de Thingsboard por medio de MQTT
+*/
+static void public_provisioning_message(){
+    cJSON *provision_data = cJSON_CreateObject();
+    cJSON_AddStringToObject(provision_data, "deviceName", CONFIG_DEVICE_NAME);
+    cJSON_AddStringToObject(provision_data, "provisionDeviceKey", CONFIG_DEVICE_PROVISION_KEY);
+    cJSON_AddStringToObject(provision_data, "provisionDeviceSecret", CONFIG_DEVICE_PROVISION_SECRET);
+    cJSON_AddStringToObject(provision_data, "credentialsType", CONFIG_ACCESS_TOKEN);
+    cJSON_AddStringToObject(provision_data, "token", CONFIG_DEVICE_ACCESS_TOKEN);
+
+    char *provisioning_request = cJSON_PrintUnformatted(provision_data);
+
+    if(provisioning_request != NULL){
+        esp_mqtt_client_publish(mqtt_client, PROVISIONING_TOPIC, provisioning_request, 
+            sizeof(provisioning_request), CONFIG_QOS_MQTT, CONFIG_RETAIN_MQTT);
+        free(provisioning_request);
+    }
+    else{
+        ESP_LOGE(TAG, "Error al crear mensaje de provisionamiento");
+    }
+}
+
+static void handle_provisioning_response(const char *response) {
+    cJSON *json_response = cJSON_Parse(response);
+
+    if (json_response != NULL) {
+        const char *status = cJSON_GetObjectItemCaseSensitive(json_response, "provisionDeviceStatus")->valuestring;
+        const char *credentials_type = cJSON_GetObjectItemCaseSensitive(json_response, "credentialsType")->valuestring;
+
+        if (strcmp(status, "SUCCESS") == 0) {
+            if (strcmp(credentials_type, "ACCESS_TOKEN") == 0) {
+                access_token = cJSON_GetObjectItemCaseSensitive(json_response, "accessToken")->valuestring;
+                ESP_LOGI(TAG, "Provisioning successful. Access Token: %s", access_token);
+            } else {
+                ESP_LOGE(TAG, "Unsupported credentials type: %s", credentials_type);
+            }
+        } else {
+            ESP_LOGE(TAG, "Provisioning failed. Status: %s", status);
+        }
+
+        // Liberar la memoria asignada por cJSON_Parse
+        cJSON_Delete(json_response);
+    } else {
+        ESP_LOGE(TAG, "Error al parsear la respuesta JSON de aprovisionamiento");
+    }
+}
+
+static char* getAccessToken(){
+    return access_token;
 }
 
 /***
@@ -112,7 +158,7 @@ static void publish_data_sgp30(int piso, int aula, int numero, cJSON *valor_sens
     char *json_data = cJSON_PrintUnformatted(valor_sensor);
     if (json_data != NULL) {
         // Publicar los datos JSON directamente
-        esp_mqtt_client_publish(mqtt_client, (const char *)topic, json_data, 0, CONFIG_QOS_MQTT, CONFIG_RETAIN_MQTT);
+        esp_mqtt_client_publish(mqtt_client, (const char *)topic, json_data, strlen(json_data), CONFIG_QOS_MQTT, CONFIG_RETAIN_MQTT);
 
         // Liberar la memoria asignada por cJSON_PrintUnformatted
         free(json_data);
@@ -165,7 +211,6 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
             suscribe_topic_control();
-            suscribe_topic_control();
             notify_node_event("Node activated");
             break;
         case MQTT_EVENT_DISCONNECTED:
@@ -201,7 +246,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                 ESP_LOGI(TAG, "Sending the binary");
                 send_binary(client);
             }
-
+            if(!is_provisioned){
+                is_provisioned = true;
+                // Manejar la respuesta de aprovisionamiento
+                handle_provisioning_response((const char *)event->data);
+                break;
+            }
             //Se llama a mqtt_configure_callback
             mqtt_configure_callback((const char *) event->topic, (const char *) event->data);
             break;
@@ -262,4 +312,7 @@ void init_publisher_mqtt (void){
     esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_config);
     esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
     esp_mqtt_client_start(client);
+
+    // Realizar el provisionamiento
+    perform_provisioning();
 }
