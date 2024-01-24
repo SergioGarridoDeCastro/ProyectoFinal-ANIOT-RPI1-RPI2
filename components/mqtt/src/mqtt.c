@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
@@ -32,6 +33,8 @@ const char *access_token;
 
 #define PROVISIONING_TOPIC "v1/gateway/control/node_provisioning"
 #define SAMPLING_FREQUENCY_TOPIC "v1/gateway/configure/frequency"
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
 
 static const char *TAG = "MQTT";
 
@@ -179,7 +182,9 @@ static void publish_data_si7021(int piso, int aula, int numero, CborValue valor_
     // Crear un objeto CBOR en el búfer
     CborEncoder encoder;
     cbor_encoder_init(&encoder, cbor_buffer, sizeof(cbor_buffer), 0);
-    cbor_encode_(&encoder, valor_sensor);
+    char *value_cbor = cbor_value_get_text_string_checked(&valor_sensor);
+    cbor_encode_text_string(&encoder, value_cbor, sizeof(value_cbor));
+
 
     // Obtener el tamaño del CBOR serializado
     size_t cbor_size = cbor_encoder_get_buffer_size(&encoder, cbor_buffer);
@@ -278,7 +283,7 @@ void init_publisher_mqtt (void){
         .credentials.authentication.password = CONFIG_MQTT_PASSWORD,
         .network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
         .network.transport = MQTT_TRANSPORT_OVER_SSL, // Habilita el transporte seguro
-        .credentials.authentication.certificate = node_cert_pem_start /* Certificado PEM para la conexión segura */,
+        .credentials.authentication.certificate = node_cert_pem_start /* Certificado PEM para la conexión segura */
         //.client_cert_pem = (const unsigned char *) node_cert_pem_start,
         //.client_key_pem = (const unsigned char *)node_key_pem_start
     };
