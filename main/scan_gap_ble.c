@@ -27,6 +27,13 @@
 #include <esp_gatt_defs.h>
 #include <esp_gattc_api.h>
 
+#define GATTC_TAG "GATTC_CLIENT"
+#define REMOTE_SERVICE_UUID        0x00FF
+#define REMOTE_NOTIFY_CHAR_UUID    0xFF01
+#define PROFILE_NUM      1
+#define PROFILE_A_APP_ID 0
+#define INVALID_HANDLE   0
+
 #define SCAN_DURATION       10    // Duración del escaneo en segundos
 #define RSSI_THRESHOLD      -70   // Umbral RSSI para filtrar dispositivos lejanos
 #define MAX_DEVICES         10    // Máximo número de dispositivos que se pueden manejar
@@ -34,6 +41,7 @@
 #define FORGET_THRESHOLD  500     // Tiempo en segundos para considerar un dispositivo como "olvidado"
 #define D_0                 1     // Distancia de referencia para el calculo de una distancia
 #define RSSI_0              -50.0 // RSSI de referencia 
+#define RSSI_MEASUREMENT_ERROR 1.0 //Valor inicial
 
 
 //Variables globales y definicion de funciones sacadas del ejemplo del cliente GATT
@@ -399,7 +407,7 @@ static void esp_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_
                     if (connect == false) {
                         //Estimar la distancia basada en el RSSI 
                         int estimated_distance = estimate_distance(scan_result->scan_rst.rssi);
-                        ESP_LOGI(GATTC_TAG,"Estimated distance: %d", distance);
+                        ESP_LOGI(GATTC_TAG,"Estimated distance: %d", estimated_distance);
 
                         ESP_LOGI(GATTC_TAG,"Updating list of devices");
                         //Actualizar la lista de dispositivos BLE cercanos 
@@ -523,14 +531,14 @@ static void update_ble_devices_list(esp_bd_addr_t bd_addr, int rssi, int estimat
         ble_detected_devices[index_device].last_detection_time = time(NULL);
         ble_detected_devices[index_device].detected_in_last_scan = true;
 
-        ESP_LOGI(GATTC_TAG, "Device is in room: %s", ble_detected_devices[index_device].is_in_room:?"true":"false");
+        ESP_LOGI(GATTC_TAG, "Device is in room: %s", ble_detected_devices[index_device].is_in_room ? "true" : "false");
     }
     else{
         if(num_devices < MAX_DEVICES){
             ble_detected_devices[num_devices].rssi = rssi;
             ble_detected_devices[num_devices].is_in_room = estimated_distance < MAX_DISTANCE_THRESHOLD;
             ble_detected_devices[index_device].detected_in_last_scan = true;
-            ESP_LOGI(GATTC_TAG, "Device is in room: %s", ble_detected_devices[index_device].is_in_room:?"true":"false");
+            ESP_LOGI(GATTC_TAG, "Device is in room: %s", ble_detected_devices[index_device].is_in_room ? "true" : "false");
 
             memcpy(ble_detected_devices[num_devices].bd_addr, bd_addr, ESP_BD_ADDR_LEN);
             ble_detected_devices[num_devices].last_detection_time = time(NULL);

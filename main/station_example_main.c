@@ -62,8 +62,8 @@ static int s_retry_num = 0;
 static esp_event_handler_instance_t instance_any_id;
 
 
-static char[32] provisioned_ssid = "";
-static char[64] provisioned_password = "";
+static char provisioned_ssid[32]= "";
+static char provisioned_password[64] = "";
 
 //Variables globales relativas al QR
 #define PROV_QR_VERSION         "v1"

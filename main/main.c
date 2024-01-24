@@ -25,12 +25,15 @@
 #include <portmacro.h>
 #include <sntp.h>
 #include <esp_netif_sntp.h>
+#include <esp_err.h>
 
 static const char *TAG = "user_event_loops";
 
 //Definicion de la maquina de estados 
 typedef enum{
     STATE_INIT,
+    STATE_PROVISIONING_WIFI,
+    STATE_PROVISIONING_THINGSBOARD,
     STATE_MONITORITATION,
     STATE_TRANSMISION,
     STATE_LOW_POWER,
@@ -68,7 +71,7 @@ void states_machine()
 static int initialize_sntp(void){
         ESP_LOGI(TAG, "Initializing SNTP");
         esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("poolntp.org");
-        config.timezone = 1; //UTC+1 para Madrid
+        //config.timezone = 1; //UTC+1 para Madrid
         //config.smooth_sync = true;
         //config.sync_cb = time_sync_notification_cb;
         esp_err_t sntp_init_result = esp_netif_sntp_init(&config);
@@ -76,6 +79,8 @@ static int initialize_sntp(void){
             ESP_LOGE(TAG, "SNTP initialization failed with error %d", sntp_init_result);
             return sntp_init_result;
         }
+        // Configurar la zona horaria (UTC+1 para Madrid)
+    esp_sntp_set_timezone(1);
         return ESP_OK;
 }
 
@@ -145,18 +150,18 @@ void app_main(void)
     }
 
     time_t now;
-    struct tm timeinfo;
+    struct tm *timeinfo;
     time(&now);
-    localtime(&now, &timeinfo);
+    timeinfo = localtime(&now);
 
-    if(timeinfo.tm_year < (2024 - 1900)){
+    if(timeinfo->tm_year < (2024 - 1900)){
         ESP_LOG(TAG, "Time is not set yet, Connecting to WiFi and getting time over NTP");
         obtain_time();
         time(&now);
     }
 
     //Inicializa el servidor REST
-    ESP_ERROR_CHECK(start_rest_server(CONFIG_EXAMPLE_WEB_MOUNT_POINT));
+    //ESP_ERROR_CHECK(start_rest_server(CONFIG_EXAMPLE_WEB_MOUNT_POINT));
 
     ESP_ERROR_CHECK(err);
     muestradora(1000000);
