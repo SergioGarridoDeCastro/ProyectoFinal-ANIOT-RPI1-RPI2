@@ -21,6 +21,7 @@
 #include "qrcode.h"
 #include <projdefs.h>
 #include <esp_err.h>
+#define CONFIG_ESP_MAXIMUM_RETRY 5
 
 #if CONFIG_EXAMPLE_PROV_SECURITY_VERSION_2
 #if CONFIG_EXAMPLE_PROV_SEC2_DEV_MODE
@@ -64,7 +65,7 @@ static const char sec2_verifier[] = {
 
 static esp_err_t example_get_sec2_salt(const char **salt, uint16_t *salt_len) {
 #if CONFIG_EXAMPLE_PROV_SEC2_DEV_MODE
-    ESP_LOGI(TAG, "Development mode: using hard coded salt");
+    //ESP_LOGI(TAG, "Development mode: using hard coded salt");
     *salt = sec2_salt;
     *salt_len = sizeof(sec2_salt);
     return ESP_OK;
@@ -76,7 +77,7 @@ static esp_err_t example_get_sec2_salt(const char **salt, uint16_t *salt_len) {
 
 static esp_err_t example_get_sec2_verifier(const char **verifier, uint16_t *verifier_len) {
 #if CONFIG_EXAMPLE_PROV_SEC2_DEV_MODE
-    ESP_LOGI(TAG, "Development mode: using hard coded verifier");
+    //ESP_LOGI(TAG, "Development mode: using hard coded verifier");
     *verifier = sec2_verifier;
     *verifier_len = sizeof(sec2_verifier);
     return ESP_OK;
@@ -159,9 +160,9 @@ static void get_device_service_name(char *service_name, size_t max){
              ssid_prefix, eth_mac[3], eth_mac[4], eth_mac[5]);
 }
 
-static wifi_prov_print_qr(const char *name, const char *username, const char *pop, const char *transport){
+static void wifi_prov_print_qr(const char *name, const char *username, const char *pop, const char *transport){
     if(!name || !transport){
-        EDP_LOGW(TAG, "Cannot generate QR code payload. Data missing.");
+        ESP_LOGW(TAG, "Cannot generate QR code payload. Data missing.");
         return;
     }
 

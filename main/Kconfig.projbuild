@@ -99,7 +99,7 @@ menu "Provisioning Configuration"
 endmenu
 
 menu "Transport Protocol"
-    choice PROTCOL_TRANSPORT
+    choice EXAMPLE_PROV_MODE
         bool "Transport Protocol"
         default MQTT_PROTOCOL if IDF_TARGET_ESP32S2
         default COAP_PROTOCOL
@@ -113,22 +113,4 @@ menu "Transport Protocol"
         config COAP_PROTOCOL
             bool "COAP"
     endchoice
-endmenu
-
-menu "Node Configuration"
-    config PISO_NODO
-        int
-        default 1
-        help
-            Representa el piso en el que se encuentra el nodo en la jerarquia de MQTT 
-    config AULA_NODO
-        int
-        default 1
-        help
-            Representa el aula en el que se encuentra el nodo en la jerarquia de MQTT 
-    config NUMERO_NODO
-        int
-        default 1
-        help
-            Representa el numero en el que se encuentra el nodo en la jerarquia de MQTT 
 endmenu
