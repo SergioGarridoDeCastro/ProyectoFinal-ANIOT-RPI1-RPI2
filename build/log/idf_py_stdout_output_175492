@@ -32,7 +32,7 @@ Processing 2 dependencies:
 -- Found Python3: /home/alex/.espressif/python_env/idf5.1_py3.8_env/bin/python (found version "3.8.10") found components: Interpreter 
 -- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS
 -- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS - Success
--- App "ProyectoFinal-ANIOT-RPI1-RPI2" version: da60b12-dirty
+-- App "ProyectoFinal-ANIOT-RPI1-RPI2" version: 85fe428-dirty
 -- Adding linker script /home/alex/esp/5.1/esp-idf/examples/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/esp_system/ld/memory.ld
 -- Adding linker script /home/alex/esp/5.1/esp-idf/components/esp_system/ld/esp32/sections.ld.in
 -- Adding linker script /home/alex/esp/5.1/esp-idf/components/esp_rom/esp32/ld/esp32.rom.ld

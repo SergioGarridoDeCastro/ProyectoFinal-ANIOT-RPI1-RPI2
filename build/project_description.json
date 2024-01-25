@@ -1,7 +1,7 @@
 {
     "version":            "1",
     "project_name":       "ProyectoFinal-ANIOT-RPI1-RPI2",
-    "project_version":    "da60b12-dirty",
+    "project_version":    "85fe428-dirty",
     "project_path":       "/home/alex/esp/5.1/esp-idf/examples/ProyectoFinal-ANIOT-RPI1-RPI2",
     "idf_path":           "/home/alex/esp/5.1/esp-idf",
     "build_dir":          "/home/alex/esp/5.1/esp-idf/examples/ProyectoFinal-ANIOT-RPI1-RPI2/build",
