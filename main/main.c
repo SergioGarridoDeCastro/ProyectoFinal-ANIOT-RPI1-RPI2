@@ -23,7 +23,9 @@
 #include <time.h>
 #include <sys/time.h>
 #include <sntp.h>
-
+#include "ota.h"
+#include "coap_client.h"
+#include "protocol_examples_common.h"
 static const char *TAG = "user_event_loops";
 
 void monitorize_handler(void *handler_arg, esp_event_base_t base, int32_t id, void *event_data)
@@ -37,6 +39,7 @@ void monitorize_handler(void *handler_arg, esp_event_base_t base, int32_t id, vo
 
 void states_machine()
 {
+
     while (1)
     {
         vTaskDelay(10000 / portTICK_PERIOD_MS);
@@ -68,6 +71,9 @@ void app_main(void)
     };
     esp_pm_configure(&config_power_mode);
     ESP_ERROR_CHECK(err);
-    muestradora(1000000);
+
+    // muestradora(1000000);
+    ota_work();
+    // coap_work();
     xTaskCreate(states_machine, "states_machine", 4096, NULL, tskIDLE_PRIORITY, NULL);
 }
