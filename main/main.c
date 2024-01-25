@@ -85,7 +85,7 @@ void app_main(void)
         .min_freq_mhz = 80,
         .light_sleep_enable = true,
     };
-    // esp_pm_configure(&config_power_mode);
+    esp_pm_configure(&config_power_mode);
     ESP_ERROR_CHECK(err);
 
     // muestradora(1000000);
