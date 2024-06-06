@@ -61,5 +61,26 @@ Todos los parametros relativos a LWT y el timeout (keepalive) se configuran medi
 1. Estimacion del aforo mediante la utilizacion de la sala contando los dispositivos BLE usando GAP para escanear dichos dispositivos. A partir del RSSI de cada dispositivo se estima la distancia a la que está este. Se ha considerado utilizar una trilateracion 2D ( técnica geométrica que determina la posición de un objeto conociendo su distancia a tres puntos de referencia.) pero se ha decartado debido a que solo se conocen la situacion concreta de un ESP. Es por ello que se plantea utilizar una distancia arbitraria que sirva como umbral de referencia para determinar que dispositivo esta dentro y cual no. Se plantea utilizar un filtro de kalman para reducir el ruido ambiental y las interferencias que podrían afectar las mediciones de RSSI. La funcion de calculo de la distancia se ha tomado del siguiente documento: https://repositorio.unican.es/xmlui/bitstream/handle/10902/19626/428600.pdf?sequence=1 pagina 11
 ## RPI-II
 1. 
+# Convocatoria extraordinaria
+## RPI-II
+### MQTT
+Para arreglar los problemas de compilacion relativos a MQTT se han añadido las siguientes lineas en su CMakeList.txt
+
+```
+REQUIRES mqtt esp_event esp_timer espressif__cbor nvs_flash json protocol_examples_common tcp_transport
+```
+y
+```
+set(EXTRA_COMPONENT_DIRS $ENV{IDF_PATH}/components/esp-mqtt/include)
+# Incluir la ruta del componente MQTT explícitamente
+include_directories($ENV{IDF_PATH}/components/mqtt/esp-mqtt/include)
+```
+Esto es debido a que los errores que se encontraban indicaban "no se puede abrir el archivo origen (código de error "mqtt_client.h").C/C++(1696)". Esto se debia a que los componentes no estaban registrados correctamente en la lista de dependencias (REQUIRES), por lo que el compilador no incluirá automáticamente las rutas de inclusión de ese componente.
+
+Por otra parte se ha planteado modificar el componente MQTT con el objetivo de establecerlo como una api para utilizar MQTT y eliminar las funcionalidades relativas al provisionamiento con el objetivo de hacer el codigo más sencillo y modular.
+
+# RPI-I
+Respecto a otros errores de compulacion se ha realizado modificaciones similares.
+
 ## NOTAS
 1. En el componente MQTT se decide que los datos que recoge el sensor SGP30 se representen como CJSON y los datos que recoge el sensor Si7021 se representen como CBOR antes de publicarlos en el broker. La razon de la eleccion de CBOR en los datos del sensor Si7021 es que se considera CBOR es un formato de representación más compacto y que al recoger el sensor datos de temperatura y humedad tiene más sentido enviarlos más compactos de cara a ahorrar ancho de banda.

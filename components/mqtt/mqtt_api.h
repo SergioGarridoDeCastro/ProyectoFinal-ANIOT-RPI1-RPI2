@@ -16,8 +16,8 @@ void handle_mqtt_configure(const char *topic, const char *datos);
 void mqtt_configure_callback(const char *topic, const char *datos);
 void notify_node_event(const char *event);
 void suscribe_topic_control(void); // Corregí el nombre de la función
-void publish_data_sgp30(int piso, int aula, int numero, char *valor_sensor);
-void publish_data_si7021(int piso, int aula, int numero, char valor_sensor);
+static void publish_data_sgp30(int piso, int aula, int numero, cJSON *valor_sensor);
+void publish_data_si7021(int piso, int aula, int numero, cJSON valor_sensor);
 void publish_lwt(void);
 void log_error_if_nonzero(const char *message, int error_code);
 void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data);

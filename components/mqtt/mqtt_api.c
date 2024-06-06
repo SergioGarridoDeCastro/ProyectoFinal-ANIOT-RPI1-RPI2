@@ -7,11 +7,11 @@
 #include <esp_log.h>
 
 
-#ifdef CONFIG_USE_MQTT
+//#ifdef CONFIG_USE_MQTT
 
 static const char *TAG = "MQTT";
 
-static esp_mqtt_client_handle_t mqtt_client  = NULL;
+static esp_mqtt_client_handle_t cliente_mqtt  = NULL;
 static void *mqtt_event_handler = NULL;
 static int sampling_frequency = 30;
 static bool is_provisioned = false;
@@ -32,7 +32,7 @@ extern const uint8_t node_cert_pem_start[]   asm("_binary_node_cert_pem_start");
 #endif
 extern const uint8_t mnode_cert_pem_end[]   asm("_binary_node_cert_pem_end");
 
-static void send_binary(esp_mqtt_client_handle_t cliente){
+/*static void send_binary(esp_mqtt_client_handle_t cliente){
     esp_partition_mmap_handle_t out_handle;
     const void *binary_address;
     const esp_partition_t *partition;
@@ -41,27 +41,15 @@ static void send_binary(esp_mqtt_client_handle_t cliente){
     int binary_size = MIN(CONFIG_BROKER_BIN_SIZE_TO_SEND, partition->size);
     int msg_id = esp_mqtt_client_publish(cliente, "/topic/binary", binary_address, binary_size, 0, 0);
     ESP_LOGI(TAG, "binary sent with msg_id=%d", msg_id);
-}
+}*/
 
 
 //Funcion para iniciar MQTT
-esp_err_t mqtt_init(void *event_handler, char *device_token, char *cert){
-    esp_err_t error;
-    char url_mqtt[256];
-
-    if(sniprintf(url_mqtt, sizeof(url_mqtt), "mqtts://%s", CONFIG_THINGSBOARD_URL) > sizeof(mqtt_url)){
-        ESP_LOGE(TAG, "La url del broker MQTT es demasiado larga");
-        return ESP_ERR_INVALID_SIZE;
-    }
-
-
-}
-
 esp_err_t init_publisher_mqtt(void *event_handler, char *device_token, char *cert){
     esp_err_t error;
     char url[256];
 
-    if(sniprintf(url, sizeof(url), "mqtts://%s", CONFIG_THINGSBOARD_URL) > sizeof(url)){
+    if(sniprintf(url, sizeof(url), "mqtts://%s", CONFIG_BROKER_URL) > sizeof(url)){
         ESP_LOGE(TAG, "La url del broker MQTT es demasiado larga");
         return ESP_ERR_INVALID_SIZE;
     }
@@ -80,17 +68,17 @@ esp_err_t init_publisher_mqtt(void *event_handler, char *device_token, char *cer
 
 
 
-    esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_config);
-    if (client == NULL) {
+    cliente_mqtt = esp_mqtt_client_init(&mqtt_config);
+    if (cliente_mqtt == NULL) {
         ESP_LOGE(TAG, "Error en esp_mqtt_client_init");
         return ESP_ERR_INVALID_ARG;
     }
-    error = esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Error en esp_mqtt_client_register_event: %s", esp_err_to_name(err));
+    error = esp_mqtt_client_register_event(cliente_mqtt, ESP_EVENT_ANY_ID, event_handler, NULL);
+    if (error != ESP_OK) {
+        ESP_LOGE(TAG, "Error en esp_mqtt_client_register_event: %s", esp_err_to_name(error));
         return error;
     }
-    esp_mqtt_client_start(client);
+    esp_mqtt_client_start(cliente_mqtt);
     mqtt_event_handler = event_handler;
 
     return ESP_OK; 
@@ -100,26 +88,36 @@ esp_err_t init_publisher_mqtt(void *event_handler, char *device_token, char *cer
 
 esp_err_t deinit_publisher_mqtt(){
     esp_err_t error;
-    error = esp_mqtt_client_unregister_event(mqtt_client, ESP_EVENT_ANY_ID, mqtt_event_handler);
-        if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Error en esp_mqtt_client_unregister_event: %s", esp_err_to_name(err));
-        return err;
+    error = esp_mqtt_client_unregister_event(cliente_mqtt, ESP_EVENT_ANY_ID, mqtt_event_handler);
+        if (error != ESP_OK) {
+        ESP_LOGE(TAG, "Error en esp_mqtt_client_unregister_event: %s", esp_err_to_name(error));
+        return error;
     }
     mqtt_event_handler = NULL;
     
 
-    err = esp_mqtt_client_destroy(mqtt_client);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Error en esp_mqtt_client_destroy: %s", esp_err_to_name(err));
-        return err;
+    error = esp_mqtt_client_destroy(cliente_mqtt);
+    if (error != ESP_OK) {
+        ESP_LOGE(TAG, "Error en esp_mqtt_client_destroy: %s", esp_err_to_name(error));
+        return error;
     }
 
     return ESP_OK;
 }
 
+//Funcion para comenzar la ejecucción del publicador MQTT 
+esp_err_t start_publisher(){
+    return esp_mqtt_client_start(cliente_mqtt);
+}
+
+//Funcion para parar la publicación del publicador MQTT 
+esp_err_t stop_publisher(){
+    return esp_mqtt_client_stop(cliente_mqtt);
+}
+
 
 //Funcion para manejar los comandos remotos a traves de MQTT
-static void handle_mqtt_configure(const char *topic, const char *datos){
+/*static void handle_mqtt_configure(const char *topic, const char *datos){
     if(strcmp(topic, SAMPLING_FREQUENCY_TOPIC) == 0){     
         (TAG, "Setting sampling frequency for topic %s to %f", topic, sampling_frequency);
         sscanf(datos, "%d", &sampling_frequency);
@@ -127,12 +125,12 @@ static void handle_mqtt_configure(const char *topic, const char *datos){
     else{
 
     }
-}
+}*/
 
 
-static void mqtt_configure_callback(const char *topic, const char *datos){
+/*static void mqtt_configure_callback(const char *topic, const char *datos){
     handle_mqtt_configure(topic, datos);
-}
+}*/
 
 static void notify_node_event(const char *event){
     if (strcmp(event, "Node activated") == 0) {
@@ -154,13 +152,13 @@ static void notify_node_event(const char *event){
  * Funcion para suscribirse al topic de provisionamiento
 */
 static void suscribe_topic_provisioning(){
-    esp_mqtt_client_subscribe(mqtt_client, PROVISIONING_TOPIC, CONFIG_QOS_MQTT);
+    esp_mqtt_client_subscribe(cliente_mqtt, PROVISIONING_TOPIC, CONFIG_QOS_MQTT);
 }
 
 /**
  * Funcion para provisionamiento de Thingsboard por medio de MQTT
 */
-static void public_provisioning_message(){
+/*static void public_provisioning_message(){
     cJSON *provision_data = cJSON_CreateObject();
     cJSON_AddStringToObject(provision_data, "deviceName", CONFIG_DEVICE_NAME);
     cJSON_AddStringToObject(provision_data, "provisionDeviceKey", CONFIG_DEVICE_PROVISION_KEY);
@@ -171,7 +169,7 @@ static void public_provisioning_message(){
     char *provisioning_request = cJSON_PrintUnformatted(provision_data);
 
     if(provisioning_request != NULL){
-        esp_mqtt_client_publish(mqtt_client, PROVISIONING_TOPIC, provisioning_request, 
+        esp_mqtt_client_publish(cliente_mqtt, PROVISIONING_TOPIC, provisioning_request, 
             sizeof(provisioning_request), CONFIG_QOS_MQTT, CONFIG_RETAIN_MQTT);
         free(provisioning_request);
     }
@@ -207,7 +205,7 @@ static void handle_provisioning_response(const char *response) {
 
 static char* getAccessToken(){
     return access_token;
-}
+}*/
 
 /***
  * Funcion para publicar los datos del sensor SGP30
@@ -220,7 +218,7 @@ static void publish_data_sgp30(int piso, int aula, int numero, cJSON *valor_sens
     char *json_data = cJSON_PrintUnformatted(valor_sensor);
     if (json_data != NULL) {
         // Publicar los datos JSON directamente
-        esp_mqtt_client_publish(mqtt_client, (const char *)topic, json_data, strlen(json_data), CONFIG_QOS_MQTT, CONFIG_RETAIN_MQTT);
+        esp_mqtt_client_publish(cliente_mqtt, (const char *)topic, json_data, strlen(json_data), CONFIG_QOS_MQTT, CONFIG_RETAIN_MQTT);
 
         // Liberar la memoria asignada por cJSON_PrintUnformatted
         free(json_data);
@@ -232,26 +230,27 @@ static void publish_data_sgp30(int piso, int aula, int numero, cJSON *valor_sens
 /***
  * Funcion para publicar los datos del sensor Si7021
 */
-static void publish_data_si7021(int piso, int aula, int numero, CborValue valor_sensor){
+static void publish_data_si7021(int piso, int aula, int numero, cJSON *valor_sensor){
     char topic[100];
     snprintf(topic, sizeof(topic), "facultad_informatica/piso_%d/aula_%d/%d/Si7021", piso, aula, numero);
     // Crear un búfer para almacenar el CBOR serializado
     uint8_t cbor_buffer[512];  // Ajusta el tamaño según tus necesidades
 
     // Crear un objeto CBOR en el búfer
-    CborEncoder encoder;
-    cbor_encoder_init(&encoder, cbor_buffer, sizeof(cbor_buffer), 0);
-    char *value_cbor = cbor_value_get_text_string_chunk(&valor_sensor);
-    cbor_encode_text_string(&encoder, value_cbor, sizeof(value_cbor));
+    char *json_data = cJSON_PrintUnformatted(valor_sensor);
+    if (json_data != NULL) {
+        // Publicar los datos JSON directamente
+        esp_mqtt_client_publish(cliente_mqtt, (const char *)topic, json_data, strlen(json_data), CONFIG_QOS_MQTT, CONFIG_RETAIN_MQTT);
 
-
-    // Obtener el tamaño del CBOR serializado
-    size_t cbor_size = cbor_encoder_get_buffer_size(&encoder, cbor_buffer);
-    esp_mqtt_client_publish(mqtt_client,(const char *) topic, (const char *) &cbor_buffer, cbor_size, CONFIG_QOS_MQTT, CONFIG_RETAIN_MQTT);
+        // Liberar la memoria asignada por cJSON_PrintUnformatted
+        free(json_data);
+    } else {
+        ESP_LOGE(TAG, "Error al convertir");
+    }
 }
 
 static void publish_lwt(void){
-    esp_mqtt_client_publish(mqtt_client, CONFIG_LWT_TOPIC, CONFIG_LWT_MESSAGE, 0, 
+    esp_mqtt_client_publish(cliente_mqtt, CONFIG_LWT_TOPIC, CONFIG_LWT_MESSAGE, 0, 
             CONFIG_LWT_QOS, CONFIG_LWT_RETAIN);
 }
 
@@ -262,7 +261,7 @@ static void log_error_if_nonzero(const char *message, int error_code)
     }
 }
 
-static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data){
+static void event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data){
     ESP_LOGD(TAG, "Event dispatched from event loop base = %s, event_id = %d", base, event_id);
 
     esp_mqtt_event_handle_t event = event_data;
@@ -335,4 +334,4 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     }
 }
 
-#endif
+//#endif
