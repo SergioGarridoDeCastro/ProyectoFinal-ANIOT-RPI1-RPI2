@@ -2,5 +2,10 @@
 # CMakeLists in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.16)
 
+# (Not part of the boilerplate)
+# This example uses an extra component for common functions such as Wi-Fi and Ethernet connection.
+set(EXTRA_COMPONENT_DIRS $ENV{IDF_PATH}/examples/common_components/protocol_examples_common $ENV{IDF_PATH}/components/bt $ENV{IDF_PATH}/components/mqtt/esp-mqtt)
+
+
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(ProyectoFinal-ANIOT-RPI1-RPI2)

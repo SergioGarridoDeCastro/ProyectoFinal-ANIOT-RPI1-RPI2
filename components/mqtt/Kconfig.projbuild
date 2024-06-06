@@ -87,35 +87,3 @@ menu "MQTT Configuration"
             Tiempo de reconexion
 
 endmenu
-
-menu "Thingsboard Provisioning"
-    config DEVICE_NAME
-        string "Device Name"
-        default ""
-        help 
-            Device name in ThingsBoard.
-
-    config DEVICE_PROVISION_KEY
-        string "Device Provision Key"
-        default ""
-        help 
-            Provisioning device key, you should take it from configured device profile.
-
-    config DEVICE_PROVISION_SECRET
-        string "Device Provision Secret"
-        default ""
-        help 
-            Provisioning device secret, you should take it from configured device profile.
-
-    config ACCESS_TOKEN
-        string "Access Token"
-        default ""
-        help 
-            Credentials type parameter.
-    
-    config DEVICE_ACCESS_TOKEN
-        string "Device Access Token"
-        default ""
-        help 
-            Access token for device in ThingsBoard.
-endmenu    

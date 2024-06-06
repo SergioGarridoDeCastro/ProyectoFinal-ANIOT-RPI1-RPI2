@@ -1,32 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <string.h>
-#include "esp_wifi.h"
-#include "esp_system.h"
-#include "nvs_flash.h"
-#include "esp_event.h"
-#include "esp_netif.h"
-#include "protocol_examples_common.h"
+#include "mqtt_api.h"
+#include "mqtt_client.h"
+#include "cJSON.h"
+//#include "cbor.h"
+#include <esp_event.h>
+#include <esp_timer.h>
+#include <esp_log.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/semphr.h"
-#include "freertos/queue.h"
 
-#include "lwip/sockets.h"
-#include "lwip/dns.h"
-#include "lwip/netdb.h"
+#ifdef CONFIG_USE_MQTT
 
-#include "esp_log.h"
-#include "mqtt.h"
+static const char *TAG = "MQTT";
 
-#include <cjson/cJSON.h>
-#include "cbor.h"
-#include <mqtt_client.h>
-
-static esp_mqtt_client_handle_t mqtt_client;
+static esp_mqtt_client_handle_t mqtt_client  = NULL;
+static void *mqtt_event_handler = NULL;
 static int sampling_frequency = 30;
 static bool is_provisioned = false;
 const char *access_token;
@@ -36,7 +22,7 @@ const char *access_token;
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 
-static const char *TAG = "MQTT";
+
 
 //Para añadir SSL/TLS sobre MQTT
 #if CONFIG_BROKER_CERTIFICATE_OVERRIDDEN == 1
@@ -57,6 +43,79 @@ static void send_binary(esp_mqtt_client_handle_t cliente){
     ESP_LOGI(TAG, "binary sent with msg_id=%d", msg_id);
 }
 
+
+//Funcion para iniciar MQTT
+esp_err_t mqtt_init(void *event_handler, char *device_token, char *cert){
+    esp_err_t error;
+    char url_mqtt[256];
+
+    if(sniprintf(url_mqtt, sizeof(url_mqtt), "mqtts://%s", CONFIG_THINGSBOARD_URL) > sizeof(mqtt_url)){
+        ESP_LOGE(TAG, "La url del broker MQTT es demasiado larga");
+        return ESP_ERR_INVALID_SIZE;
+    }
+
+
+}
+
+esp_err_t init_publisher_mqtt(void *event_handler, char *device_token, char *cert){
+    esp_err_t error;
+    char url[256];
+
+    if(sniprintf(url, sizeof(url), "mqtts://%s", CONFIG_THINGSBOARD_URL) > sizeof(url)){
+        ESP_LOGE(TAG, "La url del broker MQTT es demasiado larga");
+        return ESP_ERR_INVALID_SIZE;
+    }
+
+    esp_mqtt_client_config_t mqtt_config = {
+        .broker.address.uri = url,
+        .broker.verification.certificate  = cert,
+        .credentials.username = CONFIG_MQTT_USERNAME,
+        .credentials.authentication.password = CONFIG_MQTT_PASSWORD,
+        .network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
+        .network.transport = MQTT_TRANSPORT_OVER_SSL, // Habilita el transporte seguro
+        .credentials.authentication.certificate = node_cert_pem_start, /* Certificado PEM para la conexión segura */
+        //.client_cert_pem = (const unsigned char *) node_cert_pem_start,
+        //.client_key_pem = (const unsigned char *)node_key_pem_start
+    };
+
+
+
+    esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_config);
+    if (client == NULL) {
+        ESP_LOGE(TAG, "Error en esp_mqtt_client_init");
+        return ESP_ERR_INVALID_ARG;
+    }
+    error = esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Error en esp_mqtt_client_register_event: %s", esp_err_to_name(err));
+        return error;
+    }
+    esp_mqtt_client_start(client);
+    mqtt_event_handler = event_handler;
+
+    return ESP_OK; 
+    // Realizar el provisionamiento
+    //perform_provisioning();
+}
+
+esp_err_t deinit_publisher_mqtt(){
+    esp_err_t error;
+    error = esp_mqtt_client_unregister_event(mqtt_client, ESP_EVENT_ANY_ID, mqtt_event_handler);
+        if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Error en esp_mqtt_client_unregister_event: %s", esp_err_to_name(err));
+        return err;
+    }
+    mqtt_event_handler = NULL;
+    
+
+    err = esp_mqtt_client_destroy(mqtt_client);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Error en esp_mqtt_client_destroy: %s", esp_err_to_name(err));
+        return err;
+    }
+
+    return ESP_OK;
+}
 
 
 //Funcion para manejar los comandos remotos a traves de MQTT
@@ -182,7 +241,7 @@ static void publish_data_si7021(int piso, int aula, int numero, CborValue valor_
     // Crear un objeto CBOR en el búfer
     CborEncoder encoder;
     cbor_encoder_init(&encoder, cbor_buffer, sizeof(cbor_buffer), 0);
-    char *value_cbor = cbor_value_get_text_string_checked(&valor_sensor);
+    char *value_cbor = cbor_value_get_text_string_chunk(&valor_sensor);
     cbor_encode_text_string(&encoder, value_cbor, sizeof(value_cbor));
 
 
@@ -276,48 +335,4 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     }
 }
 
-void init_publisher_mqtt (void){
-    esp_mqtt_client_config_t mqtt_config = {
-        .broker.address.uri = CONFIG_BROKER_URL,
-        .credentials.username = CONFIG_MQTT_USERNAME,
-        .credentials.authentication.password = CONFIG_MQTT_PASSWORD,
-        .network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
-        .network.transport = MQTT_TRANSPORT_OVER_SSL, // Habilita el transporte seguro
-        .credentials.authentication.certificate = node_cert_pem_start /* Certificado PEM para la conexión segura */
-        //.client_cert_pem = (const unsigned char *) node_cert_pem_start,
-        //.client_key_pem = (const unsigned char *)node_key_pem_start
-    };
-
-#if CONFIG_BROKER_URL_FROM_STDIN
-    char line[128];
-
-    if (strcmp(mqtt_config.broker.address.uri, "FROM_STDIN") == 0) {
-        int count = 0;
-        printf("Please enter url of mqtt broker\n");
-        while (count < 128) {
-            int c = fgetc(stdin);
-            if (c == '\n') {
-                line[count] = '\0';
-                break;
-            } else if (c > 0 && c < 127) {
-                line[count] = c;
-                ++count;
-            }
-            vTaskDelay(10 / portTICK_PERIOD_MS);
-        }
-        mqtt_config.broker.address.uri = line;
-        printf("Broker url: %s\n", line);
-    } else {
-        ESP_LOGE(TAG, "Configuration mismatch: wrong broker url");
-        abort();
-    }
-#endif /* CONFIG_BROKER_URL_FROM_STDIN */
-
-
-    esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_config);
-    esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
-    esp_mqtt_client_start(client);
-
-    // Realizar el provisionamiento
-    perform_provisioning();
-}
+#endif

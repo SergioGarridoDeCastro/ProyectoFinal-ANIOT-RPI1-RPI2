@@ -1,7 +1,9 @@
-set(srcs "src/mqtt.c")
+idf_component_register(SRCS "mqtt_api.c"
+                       INCLUDE_DIRS "."
+                       REQUIRES mqtt esp_event esp_timer espressif__cbor nvs_flash json protocol_examples_common tcp_transport
+                       EMBED_TXTFILES node_cert.pem)
+                       
+set(EXTRA_COMPONENT_DIRS $ENV{IDF_PATH}/components/esp-mqtt/include)
+# Incluir la ruta del componente MQTT explícitamente
+include_directories($ENV{IDF_PATH}/components/mqtt/esp-mqtt/include)
 
-idf_component_register(SRCS "${srcs}"
-                       INCLUDE_DIRS "include/"
-                       REQUIRES esp_wifi esp_timer esp_event i2c_config esp-si7021 driver esp32_SGP30 nvs_flash )
-target_compile_options(${COMPONENT_LIB} PRIVATE "-Wno-format"
-EMBED_TXTFILES node_cert.pem)

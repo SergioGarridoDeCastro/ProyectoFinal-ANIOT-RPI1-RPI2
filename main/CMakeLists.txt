@@ -1,6 +1,7 @@
 # Embed the server root certificate into the final binary
 idf_build_get_property(project_dir PROJECT_DIR)
-idf_component_register(SRCS "scan_gap_ble.c" "station_example_main.c" "main.c"
-                    INCLUDE_DIRS "." "/Users/jamess/ESP/esp-idf/components/nvs_flash/include" "/Users/jamess/ESP/esp-idf/components/bt/host/bluedroid/api/include/api" "/Users/jamess/ESP/esp-idf/components/esp_timer/include" "/Users/jamess/ESP/esp-idf/components/esp_partition/include" "/Users/jamess/ESP/esp-idf/components/bt/host/bluedroid/bta/include/bta" "/Users/jamess/Desktop/ProyectoFinal-ANIOT-RPI1-RPI2-main/components/muestradora/include" "/Users/jamess/Desktop/ProyectoFinal-ANIOT-RPI1-RPI2-main/components/i2c_config/include" "/Users/jamess/ESP/esp-idf/components/wifi_provisioning/include/wifi_provisioning" "/Users/jamess/ESP/esp-idf/components/bt/host/bluedroid/common/include/common" "/Users/jamess/ESP/esp-idf/components/wifi_provisioning/include/wifi_provisioning" "/Users/jamess/ESP/esp-idf/components/driver/i2c/include/driver" "/Users/jamess/ESP/esp-idf/components/protocomm/include/common" "/Users/jamess/ESP/esp-idf/components/bt/common/include" "/Users/jamess/ESP/esp-idf/components/esp_rom/include/esp32/rom" "/Users/jamess/ESP/esp-idf/components/protocomm/include/security" "/Users/jamess/ESP/esp-idf/components/driver/gpio/include/driver" "/Users/jamess/ESP/esp-idf/components/bt/host/bluedroid/stack/include/stack" "/Users/jamess/ESP/esp-idf/components/wifi_provisioning/include/wifi_provisioning" "/Users/jamess/ESP/esp-idf/components/freertos/FreeRTOS-Kernel/include/freertos"
-                    REQUIRES esp_wifi  driver wifi_provisioning
+idf_component_register(SRCS "station_example_main.c" "main.c"
+                    INCLUDE_DIRS "." 
+                    REQUIRES esp_wifi  driver wifi_provisioning nvs_flash
                     )
+component_compile_options(-Wno-error=format= -Wno-format) #para eliminar error log_color 
