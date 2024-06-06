@@ -5,6 +5,7 @@
 #include <esp_event.h>
 #include <esp_timer.h>
 #include <esp_log.h>
+#include "esp_partition.h"
 
 
 //#ifdef CONFIG_USE_MQTT
@@ -32,7 +33,7 @@ extern const uint8_t node_cert_pem_start[]   asm("_binary_node_cert_pem_start");
 #endif
 extern const uint8_t mnode_cert_pem_end[]   asm("_binary_node_cert_pem_end");
 
-/*static void send_binary(esp_mqtt_client_handle_t cliente){
+static void send_binary(esp_mqtt_client_handle_t cliente){
     esp_partition_mmap_handle_t out_handle;
     const void *binary_address;
     const esp_partition_t *partition;
@@ -41,8 +42,7 @@ extern const uint8_t mnode_cert_pem_end[]   asm("_binary_node_cert_pem_end");
     int binary_size = MIN(CONFIG_BROKER_BIN_SIZE_TO_SEND, partition->size);
     int msg_id = esp_mqtt_client_publish(cliente, "/topic/binary", binary_address, binary_size, 0, 0);
     ESP_LOGI(TAG, "binary sent with msg_id=%d", msg_id);
-}*/
-
+}
 
 //Funcion para iniciar MQTT
 esp_err_t init_publisher_mqtt(void *event_handler, char *device_token, char *cert){
@@ -56,12 +56,12 @@ esp_err_t init_publisher_mqtt(void *event_handler, char *device_token, char *cer
 
     esp_mqtt_client_config_t mqtt_config = {
         .broker.address.uri = url,
-        .broker.verification.certificate  = cert,
+        .broker.verification.certificate  = (const char *) cert,
         .credentials.username = CONFIG_MQTT_USERNAME,
         .credentials.authentication.password = CONFIG_MQTT_PASSWORD,
         .network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
-        .network.transport = MQTT_TRANSPORT_OVER_SSL, // Habilita el transporte seguro
-        .credentials.authentication.certificate = node_cert_pem_start, /* Certificado PEM para la conexión segura */
+        //.network.transport = MQTT_TRANSPORT_OVER_SSL, // Habilita el transporte seguro
+        //.credentials.authentication.certificate = node_cert_pem_start, /* Certificado PEM para la conexión segura */
         //.client_cert_pem = (const unsigned char *) node_cert_pem_start,
         //.client_key_pem = (const unsigned char *)node_key_pem_start
     };
@@ -271,13 +271,10 @@ static void event_handler(void *handler_args, esp_event_base_t base, int32_t eve
     switch ((event_id)){
         case MQTT_EVENT_CONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
-            ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
-            ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
             suscribe_topic_control();
             notify_node_event("Node activated");
             break;
         case MQTT_EVENT_DISCONNECTED:
-            ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
             ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
             notify_node_event("Node disconnected");
             publish_lwt();
@@ -312,7 +309,7 @@ static void event_handler(void *handler_args, esp_event_base_t base, int32_t eve
             if(!is_provisioned){
                 is_provisioned = true;
                 // Manejar la respuesta de aprovisionamiento
-                handle_provisioning_response((const char *)event->data);
+                //handle_provisioning_response((const char *)event->data);
                 break;
             }
             //Se llama a mqtt_configure_callback

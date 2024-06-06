@@ -19,24 +19,12 @@
 #include <esp_event.h>
 #include <esp_timer.h>
 #include "esp_event.h"
-//#include "esp_timer.h"
+#include "esp_timer.h"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-#ifdef __cplusplus
-}
-#endif
-
-
-ESP_EVENT_DECLARE_BASE(SCAN_BLE);
-enum
-{
+enum{
     SCAN_BLE_EVENT_DEVICE_FOUND
 };
-
+ESP_EVENT_DECLARE_BASE(SCAN_BLE);
 
 /* Declare static functions */
 static void esp_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
