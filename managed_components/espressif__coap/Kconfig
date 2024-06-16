@@ -102,12 +102,15 @@ menu "CoAP Configuration"
 
             If this option is disabled, redundant CoAP Observe Persist code is removed.
 
+<<<<<<< HEAD
     config COAP_Q_BLOCK
         bool "Enable Q-Block (RFC9177) support in CoAP"
         default n
         help
             Enable Q-Block (RFC9177) fast block transfers using NON (instead of CON) support for CoAP
 
+=======
+>>>>>>> origin/ANIOT
     config COAP_WEBSOCKETS
         bool "Enable WebSockets support within CoAP"
         default n

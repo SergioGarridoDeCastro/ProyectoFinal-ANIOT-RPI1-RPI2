@@ -3,10 +3,12 @@
 
 #include "esp_event.h"
 
-ESP_EVENT_DECLARE_BASE(TEMP); // declaration of the task events family
+ESP_EVENT_DECLARE_BASE(SENSOR); // declaration of the task events family
 enum
 {
-    TEMP_OBTAINED,
+    SENSOR_TEMP,
+    SENSOR_TVOC,
+    SENSOR_ECO2
 };
 
 void muestradora(int period);

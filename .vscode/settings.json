@@ -2,6 +2,7 @@
     "C_Cpp.intelliSenseEngine": "default",
     "idf.flashType": "UART",
     "idf.portWin": "COM5",
+    "C_Cpp.errorSquiggles": "disabled",
     "idf.adapterTargetName": "esp32",
     "files.associations": {
       "mqtt.h": "c",
@@ -13,6 +14,11 @@
       "esp_event_base.h": "c",
       "stdint.h": "c",
       "mqtt_api.h": "c",
+      "event_groups.h": "c",
+      "nvs_flash.h": "c",
+      "freertos.h": "c",
+      "task.h": "c",
+      "event_source.h": "c",
       "protocol_examples_common.h": "c"
     },
     "C_Cpp.default.compilerPath": "C:\\Users\\Lenovo\\.espressif\\tools\\xtensa-esp32-elf\\esp-2022r1-11.2.0\\xtensa-esp32-elf\\bin\\xtensa-esp32-elf-gcc.exe",

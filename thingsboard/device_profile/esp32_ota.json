@@ -1,0 +1,36 @@
+{
+  "name": "ESP32_OTA",
+  "description": "Default device profile",
+  "image": null,
+  "type": "DEFAULT",
+  "transportType": "DEFAULT",
+  "provisionType": "ALLOW_CREATE_NEW_DEVICES",
+  "defaultRuleChainId": {
+    "entityType": "RULE_CHAIN",
+    "id": "7e8bac80-8d5a-11ee-a918-5939e8871334"
+  },
+  "defaultDashboardId": null,
+  "defaultQueueName": null,
+  "profileData": {
+    "configuration": {
+      "type": "DEFAULT"
+    },
+    "transportConfiguration": {
+      "type": "DEFAULT"
+    },
+    "provisionConfiguration": {
+      "type": "ALLOW_CREATE_NEW_DEVICES",
+      "provisionDeviceSecret": "w60afm2aa521azp87p6i"
+    },
+    "alarms": null
+  },
+  "provisionDeviceKey": "8iauwaqhnuxl4me0jklv",
+  "firmwareId": null,
+  "softwareId": {
+    "entityType": "OTA_PACKAGE",
+    "id": "46fd7590-8e14-11ee-991d-a962cd5b90d5"
+  },
+  "defaultEdgeRuleChainId": null,
+  "externalId": null,
+  "default": false
+}
