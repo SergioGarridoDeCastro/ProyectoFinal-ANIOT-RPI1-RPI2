@@ -30,6 +30,10 @@
 //prueba de conexión con el servidor CoAP
 //#define PAYLOAD "{\"temp\": 25.5}" 
 
+static coap_address_t uri;
+static coap_context_t *ctx = NULL;
+static coap_session_t *session = NULL;
+
 cJSON *simular_datos_sgp30() {
     cJSON *datos = cJSON_CreateObject();
     cJSON_AddNumberToObject(datos, "co2", 400); // Valor ficticio para CO2
@@ -124,7 +128,6 @@ void start_client() {
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     ESP_ERROR_CHECK(example_connect());
 
-    coap_uri_t uri;
     if (coap_split_uri((const uint8_t *)COAP_SERVER_URI, strlen(COAP_SERVER_URI), &uri) == -1) {
         ESP_LOGE(TAG, "URI no válida");
         return;
@@ -136,13 +139,13 @@ void start_client() {
         return;
     }
 
-    coap_context_t *ctx = coap_new_context(NULL);
+    ctx = coap_new_context(NULL);
     if (!ctx) {
         ESP_LOGE(TAG, "No se puede crear el contexto de CoAP");
         return;
     }
 
-    coap_session_t *session = coap_new_client_session(ctx, NULL, dst_addr, COAP_PROTO_UDP);
+    session = coap_new_client_session(ctx, NULL, dst_addr, COAP_PROTO_UDP);
     if (!session) {
         ESP_LOGE(TAG, "No se puede crear la sesión del cliente");
         coap_free_context(ctx);
@@ -162,11 +165,11 @@ void start_client() {
         //send_coap_message_sgp30(ctx, session);
         //pruebas simulación de conexión con el servidor CoAP
         cJSON *datos_sgp30 = simular_datos_sgp30();
-        send_coap_message_sgp30(ctx, session, datos_sgp30);
+        send_coap_message(ctx, session, datos_sgp30);
         cJSON_Delete(datos_sgp30);
 
         cJSON *datos_si7021 = simular_datos_si7021();
-        send_coap_message_si7021(ctx, session, datos_si7021);
+        send_coap_message(ctx, session, datos_si7021);
         cJSON_Delete(datos_si7021);
 
 
