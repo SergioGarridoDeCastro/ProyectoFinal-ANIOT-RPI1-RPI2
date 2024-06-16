@@ -16,6 +16,7 @@
 #include "esp_event_base.h"
 #include "muestradora.h"
 #include "i2c_config.h"
+#include "nvs_component.h"
 #include <string.h>
 #include "nvs_flash.h"
 #include "nvs.h"
@@ -25,7 +26,6 @@
 #include <portmacro.h>
 #include <sntp.h>
 #include "ota.h"
-#include "coap_client.h"
 #include "protocol_examples_common.h"
 static const char *TAG = "user_event_loops";
 
@@ -151,7 +151,6 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_TEMP, monitorize_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_ECO2, monitorize_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_TVOC, monitorize_handler, NULL));
-
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
@@ -161,21 +160,7 @@ void app_main(void)
         ESP_ERROR_CHECK(nvs_flash_erase());
         err = nvs_flash_init();
     }
-
-    time_t now;
-    struct tm timeinfo;
-    time(&now);
-    localtime(&now, &timeinfo);
-
-    if(timeinfo.tm_year < (2024 - 1900)){
-        ESP_LOG(TAG, "Time is not set yet, Connecting to WiFi and getting time over NTP");
-        obtain_time();
-        time(&now);
-    }
-
-    //Inicializa el servidor REST
-    ESP_ERROR_CHECK(start_rest_server(CONFIG_EXAMPLE_WEB_MOUNT_POINT));
-
+    ESP_ERROR_CHECK(esp_netif_init());
     esp_pm_config_t config_power_mode = {
         .max_freq_mhz = 240,
         .min_freq_mhz = 80,
@@ -183,9 +168,7 @@ void app_main(void)
     };
     esp_pm_configure(&config_power_mode);
     ESP_ERROR_CHECK(err);
-
-    // muestradora(1000000);
-    ota_work();
-    // coap_work();
+    //    muestradora(1000000);
+    check_updates();
     xTaskCreate(states_machine, "states_machine", 4096, NULL, tskIDLE_PRIORITY, NULL);
 }
