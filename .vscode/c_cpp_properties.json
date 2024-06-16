@@ -2,14 +2,17 @@
     "configurations": [
         {
             "name": "ESP-IDF",
-            "compilerPath": "${config:idf.toolsPath}/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin/xtensa-esp32-elf-gcc",
+            "compilerPath": "C:\\Users\\Lenovo\\.espressif\\tools\\xtensa-esp32-elf\\esp-12.2.0_20230208\\xtensa-esp32-elf\\bin\\xtensa-esp32-elf-cpp.exe",
             "includePath": [
-                "${config:idf.espIdfPath}/components/**",
-                "${config:idf.espIdfPathWin}/components/**",
-                "${config:idf.espAdfPath}/components/**",
-                "${config:idf.espAdfPathWin}/components/**",
+                "${config:idf.espIdfPathWin}\\components\\**",
                 "${workspaceFolder}/**",
-                "C:/Users/Lenovo/esp/esp-idf/components/lwip/lwip/src/include/lwip"
+                "C:/Users/Lenovo/esp-idf/components/lwip/lwip/src/include",
+                "C:\\Users\\Lenovo\\esp-idf\\examples\\common_components\\protocol_examples_tapif_io\\include",
+                "C:/Users/Lenovo/esp-idf/components/freertos/FreeRTOS-Kernel-SMP/include/freertos",
+                "C:/Users/Lenovo/esp-idf/components/esp_timer/include",
+                "${workspaceFolder}/components/mqtt/include",
+                "C:\\Users\\Lenovo\\esp-idf",
+                "C:\\Users\\Lenovo\\esp-idf\\components\\**"
             ],
             "browse": {
                 "path": [

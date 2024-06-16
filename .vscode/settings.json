@@ -2,13 +2,23 @@
     "C_Cpp.intelliSenseEngine": "default",
     "idf.flashType": "UART",
     "idf.portWin": "COM5",
-    "C_Cpp.errorSquiggles": "enabled",
     "idf.adapterTargetName": "esp32",
     "files.associations": {
       "mqtt.h": "c",
       "esp_http_server.h": "c",
-      "chrono": "c"
+      "chrono": "c",
+      "esp_err.h": "c",
+      "stddef.h": "c",
+      "esp_timer.h": "c",
+      "esp_event_base.h": "c",
+      "stdint.h": "c",
+      "mqtt_api.h": "c",
+      "protocol_examples_common.h": "c"
     },
-    "C_Cpp.default.compilerPath": "C:\\msys64\\mingw64\\bin\\gcc.exe"
+    "C_Cpp.default.compilerPath": "C:\\Users\\Lenovo\\.espressif\\tools\\xtensa-esp32-elf\\esp-2022r1-11.2.0\\xtensa-esp32-elf\\bin\\xtensa-esp32-elf-gcc.exe",
+    "idf.espIdfPathWin": "C:\\Users\\Lenovo\\esp-idf",
+    "idf.toolsPathWin": "C:\\Users\\Lenovo\\esp\\esp-idf\\tools\\",
+    "idf.pythonBinPath": "C:\\Users\\Lenovo\\.espressif\\python_env\\idf5.1_py3.11_env\\Scripts\\python.exe",
+    "CodeGPT.apiKey": "CodeGPT Plus Beta",
   }
   
