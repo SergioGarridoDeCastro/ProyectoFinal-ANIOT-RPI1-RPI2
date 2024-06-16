@@ -1,3 +1,5 @@
+#include "coap_client.h"
+
 #include <string.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -11,10 +13,6 @@
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "cJSON.h"
-//#include "i2c_config.h"
-//#include "muestradora.h"
-//#include "si7021.h"
-//#include "SGP30.h"
 
 #include "nvs_flash.h"
 
@@ -28,16 +26,9 @@
 
 #define COAP_SERVER_URI "coap://192.168.1.129"
 #define URI_PATH "api/v1/TytItM7fbBqz6ZIuxvjU/telemetry"
+
 //prueba de conexión con el servidor CoAP
 //#define PAYLOAD "{\"temp\": 25.5}" 
-static const char *TAG = "CoAP_Client";
-
-// Declaraciones de las funciones de envío de datos CoAP para los sensores - integración
-static coap_address_t *coap_get_address(coap_uri_t *uri);
-static void send_coap_message_sgp30(coap_context_t *ctx, coap_session_t *session, cJSON *valor_sensor);
-static void send_coap_message_si7021(coap_context_t *ctx, coap_session_t *session, cJSON *valor_sensor);
-cJSON *simular_datos_sgp30();
-cJSON *simular_datos_si7021();
 
 cJSON *simular_datos_sgp30() {
     cJSON *datos = cJSON_CreateObject();
@@ -53,8 +44,8 @@ cJSON *simular_datos_si7021() {
     return datos;
 }
 
-// Funciones para enviar datos CoAP
-static void send_coap_message_sgp30(coap_context_t *ctx, coap_session_t *session, cJSON *datos_sensor) {
+// Funciones para enviar datos CoAP. Se puede simplificar utilizando la misma funcion para el sensor Si7021 y SGP30
+static void send_coap_message(coap_context_t *ctx, coap_session_t *session, cJSON *datos_sensor) { 
     char *payload = cJSON_Print(datos_sensor);
     char uri_path[200];
     snprintf(uri_path, sizeof(uri_path), URI_PATH);
@@ -70,27 +61,6 @@ static void send_coap_message_sgp30(coap_context_t *ctx, coap_session_t *session
 
     if (coap_send(session, pdu) == COAP_INVALID_MID) {
         ESP_LOGE(TAG, "No se puede enviar el PDU de CoAP"); // Usando URI_PATH definido
-    }
-
-    free(payload);
-}
-
-static void send_coap_message_si7021(coap_context_t *ctx, coap_session_t *session, cJSON *datos_sensor) {
-    char *payload = cJSON_Print(datos_sensor);
-    char uri_path[200];
-    snprintf(uri_path, sizeof(uri_path), URI_PATH); // Usando URI_PATH definido
-
-    coap_pdu_t *pdu = coap_pdu_init(COAP_MESSAGE_CON, COAP_REQUEST_CODE_POST, coap_new_message_id(session), coap_session_max_pdu_size(session));
-    if (!pdu) {
-        ESP_LOGE(TAG, "No se puede crear PDU");
-        return;
-    }
-
-    coap_add_option(pdu, COAP_OPTION_URI_PATH, strlen(uri_path), (const uint8_t *)uri_path);
-    coap_add_data(pdu, strlen(payload), (const uint8_t *)payload);
-
-    if (coap_send(session, pdu) == COAP_INVALID_MID) {
-        ESP_LOGE(TAG, "No se puede enviar el PDU de CoAP");
     }
 
     free(payload);
@@ -147,60 +117,8 @@ static coap_address_t *coap_get_address(coap_uri_t *uri) {
 
     return &dst_addr;
 }
-// prueba de conexión con el servidor CoAP
-/*static void send_coap_message(coap_context_t *ctx, coap_session_t *session) {
-    coap_pdu_t *pdu = coap_pdu_init(COAP_MESSAGE_CON,
-                                    COAP_REQUEST_CODE_POST,
-                                    coap_new_message_id(session),
-                                    coap_session_max_pdu_size(session));
-    if (!pdu) {
-        ESP_LOGE(TAG, "No se puede crear PDU");
-        return;
-    }
 
-    coap_add_option(pdu, COAP_OPTION_URI_PATH, sizeof(URI_PATH) - 1, (const uint8_t *)URI_PATH);
-    coap_add_data(pdu, sizeof(PAYLOAD) - 1, (const uint8_t *)PAYLOAD);
-
-    if (coap_send(session, pdu) == COAP_INVALID_MID) {
-        ESP_LOGE(TAG, "No se puede enviar el PDU de CoAP");
-    }
-}*/
-
-/* Función send_coap_message_sgp30 prueba conexión con el servidor CoAP
-cJSON *create_sgp30_data() {
-    cJSON *sgp30_data = cJSON_CreateObject();
-    cJSON_AddNumberToObject(sgp30_data, "co2", 400); // Ejemplo: 400 ppm de CO2
-    cJSON_AddNumberToObject(sgp30_data, "voc", 150); // Ejemplo: 150 ppb de VOC
-    return sgp30_data;
-}
-*/
-/* Función send_coap_message_sgp30 prueba conexión con el servidor CoAP
-static void send_coap_message_sgp30(coap_context_t *ctx, coap_session_t *session, int piso, int aula, int numero, cJSON *valor_sensor) {
-    char uri_path[100];
-    snprintf(uri_path, sizeof(uri_path), "facultad_informatica/piso_%d/aula_%d/%d/SGP30", piso, aula, numero);
-
-    char *payload = cJSON_Print(valor_sensor);
-
-    coap_pdu_t *pdu = coap_pdu_init(COAP_MESSAGE_CON,
-                                    COAP_REQUEST_CODE_POST,
-                                    coap_new_message_id(session),
-                                    coap_session_max_pdu_size(session));
-    if (!pdu) {
-        ESP_LOGE(TAG, "No se puede crear PDU");
-        return;
-    }
-
-    coap_add_option(pdu, COAP_OPTION_URI_PATH, strlen(uri_path), (const uint8_t *)uri_path);
-    coap_add_data(pdu, strlen(payload), (const uint8_t *)payload);
-
-    if (coap_send(session, pdu) == COAP_INVALID_MID) {
-        ESP_LOGE(TAG, "No se puede enviar el PDU de CoAP");
-    }
-
-    free(payload); // Libera el payload después de usarlo
-}
-*/
-void app_main(void) {
+void start_client() {
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());

@@ -20,10 +20,12 @@
 
 #include "esp_bt_main.h"
 #include "esp_gap_ble_api.h"
+
 /*#include "bta_api.h"
 #include "bt_trace.h"
 #include "btc_manage.h"
 #include "btc_gap_ble.h"*/
+
 #include <time.h>
 #include "esp_log.h"
 #include <esp_gatt_defs.h>
@@ -32,8 +34,10 @@
 #include <esp_bt.h>
 #include <esp_event.h>
 #include <esp_timer.h>
+#include <esp_gatt_common_api.h>
 
-//#include "scan_gap_ble.h"
+#include "scan_gap_ble.h"
+#include <math.h>
 
 #define GATTC_TAG "GATTC_CLIENT"
 #define REMOTE_SERVICE_UUID        0x00FF
@@ -50,6 +54,15 @@
 #define D_0                 1     // Distancia de referencia para el calculo de una distancia
 #define RSSI_0              -50.0 // RSSI de referencia 
 #define RSSI_MEASUREMENT_ERROR 1.0 //Valor inicial
+
+// Struct para almacenar los dispositivos detectados
+typedef struct {
+    esp_bd_addr_t bd_addr;
+    int rssi;
+    bool is_in_room;
+    time_t last_detection_time;  // Marca de tiempo
+    bool detected_in_last_scan;  // Booleano que marca si un dispositivo ha sido detectado en el ultimo escaneo 
+} ble_device_t;
 
 // Define event base
 ESP_EVENT_DEFINE_BASE(SCAN_BLE);
@@ -351,15 +364,6 @@ int capacity = 1; //Se considera el aforo inicial en 1, ya que el propio nodo co
 ble_device_t ble_detected_devices[MAX_DEVICES];
 static int num_devices = 0;
 
-// Struct para almacenar los dispositivos detectados
-typedef struct {
-    esp_bd_addr_t bd_addr;
-    int rssi;
-    bool is_in_room;
-    time_t last_detection_time;  // Marca de tiempo
-    bool detected_in_last_scan;  // Booleano que marca si un dispositivo ha sido detectado en el ultimo escaneo 
-} ble_device_t;
-
 
 
 static void esp_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
@@ -393,7 +397,7 @@ static void esp_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_
             ESP_LOGI(GATTC_TAG, "searched Device Name Len %d", adv_name_len);
             esp_log_buffer_char(GATTC_TAG, adv_name, adv_name_len);
             //TODO: Aqui implementar la estimacion de aforo
-            aforo_estimado;
+            int aforo_estimado;
             int *event_data = &aforo_estimado;
             // Llamada al event loop 
             if (loop_scan != NULL) {
@@ -580,52 +584,55 @@ static void scan_timer_callback(void *arg){
 esp_event_loop_handle_t init_ble(){
     ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT));
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-    esp_err_t ret = esp_bt_controller_init(&bt_cfg);
-    if (ret) {
-        ESP_LOGE(GATTC_TAG, "%s initialize controller failed: %s\n", __func__, esp_err_to_name(ret));
-        return;
+    esp_err_t error = esp_bt_controller_init(&bt_cfg);
+    if (error) {
+        ESP_LOGE(GATTC_TAG, "%s initialize controller failed: %s\n", __func__, esp_err_to_name(error));
+        return error;
     }
 
-    ret = esp_bt_controller_enable(ESP_BT_MODE_BLE);
-    if (ret) {
-        ESP_LOGE(GATTC_TAG, "%s enable controller failed: %s\n", __func__, esp_err_to_name(ret));
-        return;
+    error = esp_bt_controller_enable(ESP_BT_MODE_BLE);
+    if (error) {
+        ESP_LOGE(GATTC_TAG, "%s enable controller failed: %s\n", __func__, esp_err_to_name(error));
+        return error;
     }
 
-    ret = esp_bluedroid_init();
-    if (ret) {
-        ESP_LOGE(GATTC_TAG, "%s init bluetooth failed: %s\n", __func__, esp_err_to_name(ret));
-        return;
+    error = esp_bluedroid_init();
+    if (error) {
+        ESP_LOGE(GATTC_TAG, "%s init bluetooth failed: %s\n", __func__, esp_err_to_name(error));
+        return error;
     }
 
-    ret = esp_bluedroid_enable();
-    if (ret) {
-        ESP_LOGE(GATTC_TAG, "%s enable bluetooth failed: %s\n", __func__, esp_err_to_name(ret));
-        return;
+    error = esp_bluedroid_enable();
+    if (error) {
+        ESP_LOGE(GATTC_TAG, "%s enable bluetooth failed: %s\n", __func__, esp_err_to_name(error));
+        return error;
     }
 
     //register the  callback function to the gap module
-    ret = esp_ble_gap_register_callback(esp_gap_callback);
-    if (ret){
-        ESP_LOGE(GATTC_TAG, "%s gap register failed, error code = %x\n", __func__, ret);
-        return;
+    error = esp_ble_gap_register_callback(esp_gap_callback);
+    if (error){
+        ESP_LOGE(GATTC_TAG, "%s gap register failed, error code = %x\n", __func__, error);
+        return error;
     }
 
     //register the callback function to the gattc module
-    ret = esp_ble_gattc_register_callback(esp_gattc_cb);
-    if(ret){
-        ESP_LOGE(GATTC_TAG, "%s gattc register failed, error code = %x\n", __func__, ret);
-        return;
+    error = esp_ble_gattc_register_callback(esp_gattc_cb);
+    if(error){
+        ESP_LOGE(GATTC_TAG, "%s gattc register failed, error code = %x\n", __func__, error);
+        return error;
     }
 
-    ret = esp_ble_gattc_app_register(PROFILE_A_APP_ID);
-    if (ret){
-        ESP_LOGE(GATTC_TAG, "%s gattc app register failed, error code = %x\n", __func__, ret);
+    error = esp_ble_gattc_app_register(PROFILE_A_APP_ID);
+    if (error){
+        ESP_LOGE(GATTC_TAG, "%s gattc app register failed, error code = %x\n", __func__, error);
     }
+
     esp_err_t local_mtu_ret = esp_ble_gatt_set_local_mtu(500);
     if (local_mtu_ret){
         ESP_LOGE(GATTC_TAG, "set local  MTU failed, error code = %x", local_mtu_ret);
     }
+
+    //Limpiar lista dispositivos
 
     //Creacion del event_loop
     esp_event_loop_args_t loop_args = {
