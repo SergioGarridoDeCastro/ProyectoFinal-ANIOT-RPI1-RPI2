@@ -1,4 +1,4 @@
-
+ /*
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
@@ -6,9 +6,9 @@
 #include "esp_chip_info.h"
 #include "esp_random.h"
 #include "esp_log.h"
-#include "esp_vfs.h"
+//#include "esp_vfs.h"
 #include "cJSON.h"
-#include "cbor.h"
+//#include "cbor.h"
 
 #include "api_rest.h"
 #include <arch.h>
@@ -34,7 +34,7 @@ typedef struct rest_server_context {
 
 #define CHECK_FILE_EXTENSION(filename, ext) (strcasecmp(&filename[strlen(filename) - strlen(ext)], ext) == 0)
 
-/* Set HTTP response content type according to file extension */
+ // Set HTTP response content type according to file extension  
 static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filepath)
 {
     const char *type = "text/plain";
@@ -71,7 +71,7 @@ static esp_err_t rest_common_get_handler(httpd_req_t *req){
     int fd = open(filepath, O_RDONLY, 0);
     if(fd == -1){
         ESP_LOGE(REST_TAG, "Error al abrir el fichero: %s", filepath);
-        /* Respond with 500 Internal Server Error */
+         // Respond with 500 Internal Server Error  
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Error al leer fichero existente");
         return ESP_FAIL;
     }
@@ -82,32 +82,32 @@ static esp_err_t rest_common_get_handler(httpd_req_t *req){
     ssize_t read_bytes;
 
     do {
-        /* Read file in chunks into the scratch buffer */
+         // Read file in chunks into the scratch buffer  
         read_bytes = read(fd, chunk, SCRATCH_BUFSIZE);
         if (read_bytes == -1) {
             ESP_LOGE(REST_TAG, "Error al leer el fichero : %s", filepath);
         } else if (read_bytes > 0) {
-            /* Send the buffer contents as HTTP response chunk */
+             // Send the buffer contents as HTTP response chunk  
             if (httpd_resp_send_chunk(req, chunk, read_bytes) != ESP_OK) {
                 close(fd);
                 ESP_LOGE(REST_TAG, "Error al enviar el fichero");
-                /* Abort sending file */
+                 // Abort sending file  
                 httpd_resp_sendstr_chunk(req, NULL);
-                /* Respond with 500 Internal Server Error */
+                 // Respond with 500 Internal Server Error  
                 httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Error al enviar el fichero");
                 return ESP_FAIL;
             }
         }
     } while (read_bytes > 0);
-    /* Close file after sending complete */
+    // Close file after sending complete 
     close(fd);
     ESP_LOGI(REST_TAG, "Envio de fichero completado");
-    /* Respond with an empty chunk to signal HTTP response completion */
+    // Respond with an empty chunk to signal HTTP response completion 
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
     
 }
-
+ //
 esp_err_t start_rest_server(const char *base_path){
     REST_CHECK(base_path, "wrong base path", err);
     rest_server_context_t *rest_context = calloc(1, sizeof(rest_server_context_t));
@@ -121,18 +121,18 @@ esp_err_t start_rest_server(const char *base_path){
     ESP_LOGI(REST_TAG, "Starting HTTP Server");
     REST_CHECK(httpd_start(&server, &config) == ESP_OK, "Start server failed", err_start);
 
-    /* URI handler for fetching system info 
+    URI handler for fetching system info 
     httpd_uri_t system_info_get_uri = {
         .uri = "/api/v1/system/info",
         .method = HTTP_GET,
         .handler = system_info_get_handler,
         .user_ctx = rest_context
     };
-    httpd_register_uri_handler(server, &system_info_get_uri);*/
+    httpd_register_uri_handler(server, &system_info_get_uri);
 
      return ESP_OK;
 err_start:
     free(rest_context);
 err:
     return ESP_FAIL;
-}
+} */

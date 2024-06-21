@@ -18,8 +18,8 @@
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
 
-#include "esp_bt_main.h"
-#include "esp_gap_ble_api.h"
+//#include "esp_bt_main.h"
+//#include "esp_gap_ble_api.h"
 
 /*#include "bta_api.h"
 #include "bt_trace.h"
