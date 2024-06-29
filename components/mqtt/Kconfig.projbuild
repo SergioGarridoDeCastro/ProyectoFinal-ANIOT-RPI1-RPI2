@@ -8,6 +8,13 @@ menu "MQTT Configuration"
     config BROKER_URL_FROM_STDIN
         bool
         default y if BROKER_URL = "FROM_STDIN"
+    
+    config THINGSBOARD_PROVISION_DEVICE_KEY
+        string "Device key para el provisionamiento via Thingsboard."
+    
+    config THINGSBOARD_PROVISION_DEVICE_SECRET
+        string "Device secret para el provisionamiento via Thingsboard."
+
 
     config MQTT_USERNAME
         string "MQTT Username"

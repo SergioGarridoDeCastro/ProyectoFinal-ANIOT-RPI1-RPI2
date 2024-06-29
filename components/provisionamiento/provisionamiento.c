@@ -128,6 +128,15 @@ static EventGroupHandle_t wifi_event_group;*/
 #define PROV_TRANSPORT_BLE      "ble"
 #define QRCODE_BASE_URL         "https://espressif.github.io/esp-jumpstart/qrcode.html"
 
+static void get_device_service_name(char *service_name, size_t max)
+{
+    uint8_t eth_mac[6];
+    const char *ssid_prefix = "PROV_";
+    esp_wifi_get_mac(WIFI_IF_STA, eth_mac);
+    snprintf(service_name, max, "%s%02X%02X%02X",
+             ssid_prefix, eth_mac[3], eth_mac[4], eth_mac[5]);
+}
+
 // Event handler for catching system events 
 static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data){
 #ifdef CONFIG_EXAMPLE_RESET_PROV_MGR_ON_FAILURE
@@ -189,14 +198,6 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 }
 
 
-static void get_device_service_name(char *service_name, size_t max)
-{
-    uint8_t eth_mac[6];
-    const char *ssid_prefix = "PROV_";
-    esp_wifi_get_mac(WIFI_IF_STA, eth_mac);
-    snprintf(service_name, max, "%s%02X%02X%02X",
-             ssid_prefix, eth_mac[3], eth_mac[4], eth_mac[5]);
-}
 
 /* Handler for the optional provisioning endpoint registered by the application.
  * The data format can be chosen by applications. Here, we are using plain ascii text.
@@ -253,27 +254,16 @@ static void wifi_prov_print_qr(const char *name, const char *username, const cha
 
 void start_provisioning()
 {
-    /* Initialize TCP/IP */
-    ESP_ERROR_CHECK(esp_netif_init());
-
-
+ 
     /* Register our event handler for Wi-Fi, IP and Provisioning related events */
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_PROV_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
 #ifdef CONFIG_EXAMPLE_PROV_TRANSPORT_BLE
     ESP_ERROR_CHECK(esp_event_handler_register(PROTOCOMM_TRANSPORT_BLE_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
 #endif
-    ESP_ERROR_CHECK(esp_event_handler_register(PROTOCOMM_SECURITY_SESSION_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_PROV_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
-
     /* Initialize Wi-Fi including netif with default config */
-    esp_netif_create_default_wifi_sta();
 #ifdef CONFIG_EXAMPLE_PROV_TRANSPORT_SOFTAP
     esp_netif_create_default_wifi_ap();
 #endif /* CONFIG_EXAMPLE_PROV_TRANSPORT_SOFTAP */
-    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
     /* Configuration for the provisioning manager */
     wifi_prov_mgr_config_t config = {
@@ -311,7 +301,7 @@ void start_provisioning()
     wifi_prov_mgr_reset_provisioning();
 #else
     /* Let's find out if the device is provisioned */
-    //ESP_ERROR_CHECK(wifi_prov_mgr_is_provisioned(&provisioned));
+    // ESP_ERROR_CHECK(wifi_prov_mgr_is_provisioned(&provisioned));
 
 #endif
     /* If device is not yet provisioned start provisioning service */
@@ -325,6 +315,7 @@ void start_provisioning()
          */
         char service_name[12];
         get_device_service_name(service_name, sizeof(service_name));
+        ESP_LOGI(TAG, "service_name: %s", service_name);
 
 #ifdef CONFIG_EXAMPLE_PROV_SECURITY_VERSION_1
         /* What is the security level that we want (0, 1, 2):
@@ -341,14 +332,14 @@ void start_provisioning()
          *      - this should be a string with length > 0
          *      - NULL if not used
          */
-        pop = "abcd1234";
+        const char *pop = "abcd1234";
 
         /* This is the structure for passing security parameters
          * for the protocomm security 1.
          */
         wifi_prov_security1_params_t *sec_params = pop;
 
-        username  = NULL;
+        const char *username  = NULL;
 
 #elif CONFIG_EXAMPLE_PROV_SECURITY_VERSION_2
         wifi_prov_security_t security = WIFI_PROV_SECURITY_2;
@@ -358,14 +349,14 @@ void start_provisioning()
         /* This pop field represents the password that will be used to generate salt and verifier.
          * The field is present here in order to generate the QR code containing password.
          * In production this password field shall not be stored on the device */
-        username  = EXAMPLE_PROV_SEC2_USERNAME;
-        pop = EXAMPLE_PROV_SEC2_PWD;
+        const char *username  = EXAMPLE_PROV_SEC2_USERNAME;
+        const char *pop = EXAMPLE_PROV_SEC2_PWD;
 #elif CONFIG_EXAMPLE_PROV_SEC2_PROD_MODE
         /* The username and password shall not be embedded in the firmware,
          * they should be provided to the user by other means.
          * e.g. QR code sticker */
-        username  = NULL;
-        pop = NULL;
+        const char *username  = NULL;
+        const char *pop = NULL;
 #endif
         /* This is the structure for passing security parameters
          * for the protocomm security 2.
@@ -497,6 +488,10 @@ esp_err_t init_provisioning(void *event_handler){
         return error;
     };
     return ESP_OK;    
+}
+
+prov_info_t* get_wifi_info() {
+    return &INFO_PROV;
 }
 
 /*void stop_provisioning(){

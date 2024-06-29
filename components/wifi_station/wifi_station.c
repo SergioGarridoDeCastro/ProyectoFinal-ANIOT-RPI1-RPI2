@@ -136,6 +136,8 @@ esp_err_t wifi_init_sta(void *wifi_handler)
         return error;
     }
 
+    ESP_LOGI(TAG, "Inicia wifi station correctamente");
+
     return ESP_OK;
 }
 

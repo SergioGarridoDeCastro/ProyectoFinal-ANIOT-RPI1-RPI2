@@ -121,16 +121,16 @@ menu "Transport Protocol"
         help
             Wi-Fi provisioning component offers both, SoftAP and BLE transports. Choose any one.
 
-        config MQTT_PROTOCOL
+        config USE_MQTT_PROTOCOL
             bool "MQTT"
             select BT_ENABLED
             depends on !IDF_TARGET_ESP32S2
-        config COAP_PROTOCOL
+        config USE_COAP_PROTOCOL
             bool "COAP"
     endchoice
 endmenu
 
-menu "provision Configuration"
+menu "Provision Configuration"
 
     choice EXAMPLE_PROV_TRANSPORT
         bool "Provisioning Transport"
