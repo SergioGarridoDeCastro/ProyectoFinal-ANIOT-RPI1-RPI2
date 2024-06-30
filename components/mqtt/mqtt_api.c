@@ -11,6 +11,7 @@
 //#ifdef CONFIG_USE_MQTT
 
 static const char *TAG = "MQTT";
+static char *DEVICE_TOKEN = NULL;
 
 static esp_mqtt_client_handle_t cliente_mqtt  = NULL;
 static void *mqtt_event_handler = NULL;
@@ -58,6 +59,7 @@ esp_err_t init_publisher_mqtt(void *event_handler, char *device_token, char *cer
         .broker.address.uri = url,
         .broker.verification.certificate  = (const char *) cert,
         .credentials.username = CONFIG_MQTT_USERNAME,
+        //.credentials.username = device_token, // El token de acceso es el nombre de usuario
         .credentials.authentication.password = CONFIG_MQTT_PASSWORD,
         .network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
         //.network.transport = MQTT_TRANSPORT_OVER_SSL, // Habilita el transporte seguro
@@ -78,7 +80,6 @@ esp_err_t init_publisher_mqtt(void *event_handler, char *device_token, char *cer
         ESP_LOGE(TAG, "Error en esp_mqtt_client_register_event: %s", esp_err_to_name(error));
         return error;
     }
-    esp_mqtt_client_start(cliente_mqtt);
     mqtt_event_handler = event_handler;
 
     return ESP_OK; 
@@ -218,12 +219,16 @@ static void publish_data_sgp30(int piso, int aula, int numero, cJSON *valor_sens
     char *json_data = cJSON_PrintUnformatted(valor_sensor);
     if (json_data != NULL) {
         // Publicar los datos JSON directamente
-        esp_mqtt_client_publish(cliente_mqtt, (const char *)topic, json_data, strlen(json_data), CONFIG_QOS_MQTT, CONFIG_RETAIN_MQTT);
-
+        int msg_id =  esp_mqtt_client_publish(cliente_mqtt, (const char *)topic, json_data, 0, CONFIG_QOS_MQTT, CONFIG_RETAIN_MQTT);
+        if (msg_id != -1) {
+            ESP_LOGI(TAG, "Datos de SGP30 publicados, msg_id=%d", msg_id);
+        } else {
+            ESP_LOGE(TAG, "Error al publicar datos de SGP30");
+        }
         // Liberar la memoria asignada por cJSON_PrintUnformatted
         free(json_data);
     } else {
-        ESP_LOGE(TAG, "Error al convertir");
+        ESP_LOGE(TAG, "Error al convertir a JSON");
     }
 }
 
@@ -240,8 +245,12 @@ static void publish_data_si7021(int piso, int aula, int numero, cJSON *valor_sen
     char *json_data = cJSON_PrintUnformatted(valor_sensor);
     if (json_data != NULL) {
         // Publicar los datos JSON directamente
-        esp_mqtt_client_publish(cliente_mqtt, (const char *)topic, json_data, strlen(json_data), CONFIG_QOS_MQTT, CONFIG_RETAIN_MQTT);
-
+        int msg_id = esp_mqtt_client_publish(cliente_mqtt, (const char *)topic, json_data, strlen(json_data), CONFIG_QOS_MQTT, CONFIG_RETAIN_MQTT);
+        if (msg_id != -1) {
+            ESP_LOGI(TAG, "Datos de SGP30 publicados, msg_id=%d", msg_id);
+        } else {
+            ESP_LOGE(TAG, "Error al publicar datos de SGP30");
+        }
         // Liberar la memoria asignada por cJSON_PrintUnformatted
         free(json_data);
     } else {
@@ -261,7 +270,75 @@ static void log_error_if_nonzero(const char *message, int error_code)
     }
 }
 
-static void event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data){
+
+
+esp_err_t subscribe(char *topic) {
+    if (esp_mqtt_client_subscribe(cliente_mqtt, topic, 1) != -1){
+        return ESP_OK;
+    }
+    else{
+        return ESP_FAIL;
+    } 
+}
+
+esp_err_t unsubscribe(char *topic) {
+    if (esp_mqtt_client_unsubscribe(cliente_mqtt, topic) != -1){
+        return ESP_OK;
+    }
+    else{
+        return ESP_FAIL;
+    }   
+}
+
+esp_err_t publish(char *topic, char *data){
+    if(esp_mqtt_client_publish(cliente_mqtt, topic, data, 0, CONFIG_QOS_MQTT, CONFIG_RETAIN_MQTT) != -1){
+        return ESP_OK;
+    }
+    else{
+        return ESP_FAIL;
+    }    
+}
+
+static void reset_mqtt_client(){
+    ESP_LOGI(TAG, "Reiniciando cliente MQTT...");
+    vTaskDelay(2000 / portMAX_DELAY);
+    ESP_ERROR_CHECK(deinit_publisher_mqtt());
+    ESP_ERROR_CHECK(init_publisher_mqtt(mqtt_event_handler, DEVICE_TOKEN, (char*) node_cert_pem_start));
+    ESP_ERROR_CHECK(start_publisher());
+    vTaskDelete(NULL);
+}
+
+static esp_err_t parse_received_device_token_thingsboard(char *response_tb, int response_tb_len) {
+
+    cJSON *response_tb_json = cJSON_ParseWithLength(response_tb, response_tb_len);
+    cJSON *token_object = cJSON_GetObjectItem(response_tb_json, "credentialsValue");
+    if (token_object == NULL) {
+        ESP_LOGE(TAG, "Invalid provision JSON received");
+        return ESP_FAIL;
+    }
+    
+    DEVICE_TOKEN = strdup(cJSON_GetStringValue(token_object));
+    if (DEVICE_TOKEN == NULL) {
+        ESP_LOGE(TAG, "Invalid provision JSON received");
+        return ESP_FAIL;
+    }
+
+    cJSON_Delete(response_tb_json);
+    return ESP_OK;
+}
+
+static cJSON* generate_provision_json() {
+
+    cJSON *json = cJSON_CreateObject();
+    cJSON_AddStringToObject(json, "provisionDeviceKey", CONFIG_THINGSBOARD_PROVISION_DEVICE_KEY);
+    cJSON_AddStringToObject(json, "provisionDeviceSecret", CONFIG_THINGSBOARD_PROVISION_DEVICE_SECRET);
+    
+    return json;
+}
+
+
+
+static void mqtt_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data){
     ESP_LOGD(TAG, "Event dispatched from event loop base = %s, event_id = %d", base, event_id);
 
     esp_mqtt_event_handle_t event = event_data;
@@ -271,32 +348,62 @@ static void event_handler(void *handler_args, esp_event_base_t base, int32_t eve
     switch ((event_id)){
         case MQTT_EVENT_CONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
-            suscribe_topic_control();
+            //suscribe_topic_control();
+
+            ESP_LOGI(TAG, "Conectado al broker MQTT de Thingsboard.");
+            if (DEVICE_TOKEN == NULL){
+                ESP_LOGI(TAG, "Token no encontrado. Hay que realizar el provisionamiento de Thingsboard via MQTT");
+                ESP_ERROR_CHECK(subscribe("/provision/response"));
+
+                ESP_LOGI(TAG, "Subscrito al topic de provisionamiento");
+                cJSON *json = generate_provision_json();
+                char *json_payload = cJSON_PrintUnformatted(json);
+
+                publish("/provision/request", json_payload);
+                cJSON_Delete(json);
+                cJSON_free(json_payload);
+                ESP_LOGI(TAG, "Enviada solicitud de provisionamiento");
+                is_provisioned = true;
+            }
+            else{
+                subscribe("v1/devices/me/attributes/response/+");
+                return;
+            }
             notify_node_event("Node activated");
             break;
         case MQTT_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
+            ESP_LOGE(TAG, "Could not connect to MQTT broker.");
             notify_node_event("Node disconnected");
-            publish_lwt();
             publish_lwt();
             break;
         case MQTT_EVENT_SUBSCRIBED:
             ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
-            ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
+            ESP_LOGI(TAG, "Suscrito al topic: \n%.*s\n", event->topic_len, event->topic);
             break;
         case MQTT_EVENT_UNSUBSCRIBED:
-            ESP_LOGI(TAG, "MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
             ESP_LOGI(TAG, "MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
             break;
         case MQTT_EVENT_PUBLISHED:
             ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
-            ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
             break;
         case MQTT_EVENT_DATA:
             ESP_LOGI(TAG, "MQTT_EVENT_DATA");
+            if(event->topic_len == 0){
+                ESP_LOGE(TAG, "Data len: %d", event->data_len);
+            }
             printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
             printf("DATA=%.*s\r\n", event->data_len, event->data);
 
+            if (strncmp(event->topic, "/provision/response", event->topic_len) == 0) {
+                ESP_LOGI(TAG, "Recibido mensaje en el topic:\n%.*s\n", event->topic_len, event->topic);
+                ESP_LOGI(TAG, "Mensaje:\n%.*s\n", event->data, event->data_len);
+                ESP_ERROR_CHECK(parse_received_device_token_thingsboard(event->data, event->data_len));
+                ESP_LOGI(TAG, "Recibido DEVICE_TOKEN:\n%s\n", DEVICE_TOKEN);
+            }
+            else{
+                ESP_LOGI(TAG, "Tamaño mensaje MQTT %d", event->data_len);
+            }
             //Se llama a mqtt_configure_callback
             mqtt_configure_callback((const char *) event->topic, (const char *) event->data);
             printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
@@ -313,7 +420,7 @@ static void event_handler(void *handler_args, esp_event_base_t base, int32_t eve
                 break;
             }
             //Se llama a mqtt_configure_callback
-            mqtt_configure_callback((const char *) event->topic, (const char *) event->data);
+            //mqtt_configure_callback((const char *) event->topic, (const char *) event->data);
             break;
         case MQTT_EVENT_ERROR:
             ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
@@ -331,4 +438,7 @@ static void event_handler(void *handler_args, esp_event_base_t base, int32_t eve
     }
 }
 
+void init_mqtt(){
+    ESP_ERROR_CHECK(init_publisher_mqtt(mqtt_event_handler, DEVICE_TOKEN, (char *) node_cert_pem_start));
+}
 //#endif
