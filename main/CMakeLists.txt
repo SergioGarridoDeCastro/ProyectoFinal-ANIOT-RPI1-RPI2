@@ -2,7 +2,7 @@
 idf_build_get_property(project_dir PROJECT_DIR)
 idf_component_register(SRCS "main.c"
                     INCLUDE_DIRS "." 
-                    REQUIRES esp_wifi  driver wifi_provisioning nvs_flash muestradora nvs_component ota
+                    REQUIRES esp_wifi  driver wifi_provisioning nvs_flash muestradora nvs_component ota mqtt provisionamiento wifi_station scan_gap_ble
                     )
 
 # Añadir los directorios adicionales donde se encuentran los archivos de encabezado necesarios

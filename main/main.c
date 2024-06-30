@@ -25,18 +25,40 @@
 #include <sys/time.h>
 #include <portmacro.h>
 #include <sntp.h>
+#include "esp_sntp.h"
+#include "mqtt_api.h"
+#include "provisionamiento.h"
+#include "wifi_station.h"
+#include "scan_gap_ble.h"
 #include "ota.h"
 #include "protocol_examples_common.h"
 static const char *TAG = "user_event_loops";
+static char *DEVICE_TOKEN = NULL;
 
 //Definicion de la maquina de estados 
 typedef enum{
     STATE_INIT,
+    STATE_PROVISIONED,
     STATE_MONITORITATION,
     STATE_TRANSMISION,
     STATE_LOW_POWER,
     STATE_OTA
 }state_machine_t;
+
+//Definicion de las transicciones entre estados
+typedef enum{
+    //Provisionamiento
+    TRANSICION_PROVISION,
+
+    TRANSICION_WIFI_CONECTADO,
+    TRANSICION_WIFI_DESCONECTADO,
+
+    //T
+    TRANSICION_LECTURA_SENSORES,
+    TRANSICION_TRANSMISION,
+    TRANSICION_ESCANEO_BLE,
+    TRANSICION_MODO_LOW_POWER,
+} transicion_t;
 
 //El estado inicial se considera STATE_INIT
 static state_machine_t current_state = STATE_INIT;
@@ -71,16 +93,106 @@ void monitorize_handler(void *handler_arg, esp_event_base_t base, int32_t id, vo
     }
 }
 
+//Handler para el provisionamiento
+void provisionamiento_handler(void *handler_arg, esp_event_base_t base, int32_t id, void *event_data){
+
+}
+
+//Handler para el wifi
+void wifi_handler(void *handler_arg, esp_event_base_t base, int32_t id, void *event_data){
+    if(base == WIFI_EVENT){
+        switch (id) {
+
+            case WIFI_EVENT_STA_CONNECTED:
+                ESP_LOGI(TAG, "IP ACQUIRED\n");
+                break;
+
+            case WIFI_EVENT_STA_DISCONNECTED:
+                //trans.tipo = TRANS_WIFI_DISCONECT;
+                //xQueueSend(fsm_queue, &trans, portMAX_DELAY);
+                ESP_LOGI(TAG, "WIFI disconnected\n");
+                break;
+
+            default:
+                ESP_LOGE("WIFI_HANDLER", "Evento desconocido.");
+        }
+    }
+    else if (base == IP_EVENT) {
+        TAG = "IP_HANDLER";
+        switch (id) {
+            
+            case IP_EVENT_STA_GOT_IP:
+                //xQueueSend(fsm_queue, &trans, portMAX_DELAY);
+                ESP_LOGI(TAG, "IP ACQUIRED\n");
+                break;
+
+            default:
+                ESP_LOGE("IP_HANDLER", "Evento desconocido.");
+        }
+    }
+}
+
+
 void states_machine()
 {
-
+   /* state_machine_t estado_actual = STATE_INIT;
+    if(init_provisioning(provisionamiento_handler) != ESP_OK){
+        ESP_LOGE(TAG, "Fallo en el provisionamiento");
+        return;
+    }*/
     while (1)
-    {
+    {   
+        //transicion_t transicion;
+        switch (current_state)
+        {
+        case STATE_INIT:
+            ESP_ERROR_CHECK(wifi_init_sta(wifi_handler));
+            ESP_LOGI(TAG, "WiFi sta iniciado");
+            ESP_ERROR_CHECK(init_provisioning(provisionamiento_handler));
+            ESP_LOGI(TAG, "Provisionamiento realizado");
+            vTaskDelay(5000);
+            current_state = STATE_PROVISIONED;
+            break;
+        case STATE_PROVISIONED:
+            prov_info_t* info_wifi = get_wifi_info();
+            ESP_ERROR_CHECK(wifi_connect(info_wifi->wifi_ssid, info_wifi->wifi_pass));
+            init_ble();
+            ESP_LOGI(TAG, "Conectado a %s", info_wifi->wifi_ssid);
+            current_state = STATE_MONITORITATION;
+            break;
+        case STATE_MONITORITATION:
+            //double distancia = estimacion_de_aforo();
+            ESP_LOGI(TAG, "BLE iniciado correctamente");
+
+            current_state = STATE_TRANSMISION;
+            break;
+        case STATE_TRANSMISION:
+            #if CONFIG_USE_COAP
+                //Envio Coap
+                ESP_LOGI(TAG, "Transmision por COAP");
+            #elif CONFIG_USE_MQTT
+                ESP_LOGI(TAG, "Transmision por MQTT");
+                publish_data_si7021(1,2, 3, valorSensor);
+                publish_data_sgp30(1,2, 3, valorSensor);
+                publish("", aforo);
+            #else
+                ESP_LOGE(TAG, "Protocolo de transporte no soportado");
+            #endif
+            current_state = STATE_LOW_POWER;
+            break;
+        case STATE_LOW_POWER:
+            break;
+        case STATE_OTA:
+            break;
+        default:
+            break;
+        }
         vTaskDelay(10000 / portTICK_PERIOD_MS);
         ESP_LOGI(TAG, "Main task");
     }
 }
 
+/*
 static int initialize_sntp(void){
         ESP_LOGI(TAG, "Initializing SNTP");
         esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("poolntp.org");
@@ -111,7 +223,7 @@ static void obtain_time(void){
     }
     time(&now);
     localtime_r(&now, &timeinfo);
-}
+}*/
 
 /*
 // handler para el wifi disconected
@@ -121,20 +233,7 @@ static void event_loop_task_mqtt(void* handler_args, esp_event_base_t base, int3
     xQueueSend(callback_queue,&id,0);
 }*/
 
-void init_machine(){
-    switch(current_state){
-        case STATE_INIT:
-            break;
-        case STATE_OTA:
-            break;
-        case STATE_MONITORITATION:
-            break;
-        case STATE_LOW_POWER:
-            break;
-        case STATE_TRANSMISION:
-            break;
-    }
-}
+
 
 void app_main(void)
 {
@@ -169,6 +268,27 @@ void app_main(void)
     esp_pm_configure(&config_power_mode);
     ESP_ERROR_CHECK(err);
     //    muestradora(1000000);
-    check_updates();
+
+
+
+    
+    //ESP_ERROR_CHECK(wifi_connect(CONFIG_ESP_WIFI_SSID, CONFIG_ESP_WIFI_PASSWORD));
+    
+
+    //check_updates();
+
+
+    /*
+    #if CONFIG_USE_MQTT_PROTOCOL
+        //Iniciación MQTT. Se le pasa el handler de los eventos
+        //MQTT para que se registre.
+        init_mqtt();
+        ESP_ERROR_CHECK(err);
+        start_publisher();
+    #else
+        ESP_LOGE(TAG, "Protocolo mal configurado");
+        return;
+    #endif*/
+    
     xTaskCreate(states_machine, "states_machine", 4096, NULL, tskIDLE_PRIORITY, NULL);
 }
