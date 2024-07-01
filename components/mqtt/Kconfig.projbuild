@@ -1,7 +1,7 @@
 menu "MQTT Configuration"
     config BROKER_URL
         string "Broker URL"
-        default "mqtt://mqtt.eclipseprojects.io"
+        default "mqtt.eclipseprojects.io"
         help
             URL of the broker to connect to
 
@@ -9,12 +9,23 @@ menu "MQTT Configuration"
         bool
         default y if BROKER_URL = "FROM_STDIN"
     
+    config MQTT_PORT
+        string "Port Mqtt"
+        default "1883"
+        help
+            Port of the broker to connect to
+
     config THINGSBOARD_PROVISION_DEVICE_KEY
         string "Device key para el provisionamiento via Thingsboard."
     
     config THINGSBOARD_PROVISION_DEVICE_SECRET
         string "Device secret para el provisionamiento via Thingsboard."
 
+    config MQTT_USE_SECURE_VERSION
+        bool "Use MQTTS"
+        default n
+        help
+            Use MQTT over SSL
 
     config MQTT_USERNAME
         string "MQTT Username"
@@ -27,6 +38,13 @@ menu "MQTT Configuration"
         default "mqtt_password"
         help
             Password to use in MQTT
+
+    config MQTT_USE_LWT
+        bool "Enable MQTT Last Will and Testament (LWT)"
+        default n
+        help
+            Enable this option if you want to configure MQTT with Last Will and Testament.
+    
 
     config LWT_TOPIC
         string  "LWT topic"

@@ -4,6 +4,7 @@
 #include "esp_err.h"  // Incluir el encabezado para esp_err_t
 #include <esp_event_base.h>
 #include "cJSON.h"
+#include <mqtt_client.h>
 
 /*
 const char *lwt_topic; //topic del mensaje LWT (Last Will and Testament)
@@ -13,7 +14,11 @@ int lwt_retain; //flag retain para el mensaje LWT.
 int lwt_msg_len; //longitud del mensaje LWT.
 int keepalive; //valor del temporizador de keepalive (por defecto 120 segundos).
 */
-esp_err_t init_publisher_mqtt (void *event_handler, char *device_token, char *cert);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+esp_err_t init_publisher_mqtt (void *event_handler, char *device_token);
 void init_mqtt();
 esp_err_t deinit_publisher_mqtt();
 esp_err_t start_publisher();
@@ -37,7 +42,9 @@ void suscribe_topic_control(void); // Corregí el nombre de la función
 
 
 
-
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif  // MQTT_API

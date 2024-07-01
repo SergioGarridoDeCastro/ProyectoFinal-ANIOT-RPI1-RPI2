@@ -114,10 +114,10 @@ menu "Project Configuration"
 endmenu
 
 menu "Transport Protocol"
-    choice EXAMPLE_PROV_MODE
+    choice TRANSPORT_CONFIGURATION
         bool "Transport Protocol"
-        default MQTT_PROTOCOL if IDF_TARGET_ESP32S2
-        default COAP_PROTOCOL
+        default USE_MQTT_PROTOCOL if IDF_TARGET_ESP32S2
+        default USE_COAP_PROTOCOL
         help
             Wi-Fi provisioning component offers both, SoftAP and BLE transports. Choose any one.
 

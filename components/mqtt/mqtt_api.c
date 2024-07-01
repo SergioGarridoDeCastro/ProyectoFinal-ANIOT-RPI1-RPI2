@@ -1,5 +1,5 @@
 #include "mqtt_api.h"
-#include "mqtt_client.h"
+#include <mqtt_client.h>
 #include "cJSON.h"
 //#include "cbor.h"
 #include <esp_event.h>
@@ -8,10 +8,14 @@
 #include "esp_partition.h"
 
 
-//#ifdef CONFIG_USE_MQTT
+#ifdef CONFIG_USE_MQTT_PROTOCOL
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 static const char *TAG = "MQTT";
-static char *DEVICE_TOKEN = NULL;
+static char *DEVICE_TOKEN = CONFIG_ACCESS_TOKEN;
 
 static esp_mqtt_client_handle_t cliente_mqtt  = NULL;
 static void *mqtt_event_handler = NULL;
@@ -25,16 +29,20 @@ const char *access_token;
 
 
 
-
+#if CONFIG_MQTT_USE_SECURE_VERSION
 //Para añadir SSL/TLS sobre MQTT
 #if CONFIG_BROKER_CERTIFICATE_OVERRIDDEN == 1
 static const uint8_t node_cert_pem_start[]  = "-----BEGIN CERTIFICATE-----\n" CONFIG_BROKER_CERTIFICATE_OVERRIDE "\n-----END CERTIFICATE-----";
 #else
-extern const uint8_t node_cert_pem_start[]   asm("_binary_node_cert_pem_start");
+extern const uint8_t node_new_cert_pem_start[] asm("_binary_node_new_cert_pem_start");
 #endif
-extern const uint8_t mnode_cert_pem_end[]   asm("_binary_node_cert_pem_end");
+extern const uint8_t node_new_cert_pem_end[] asm("_binary_node_new_cert_pem_end");
 
-static void send_binary(esp_mqtt_client_handle_t cliente){
+extern const uint8_t node_key_pem_start[] asm("_binary_node_key_pem_start");
+extern const uint8_t node_key_pem_end[] asm("_binary_node_key_pem_end");
+#endif
+
+/*static void send_binary(esp_mqtt_client_handle_t cliente){
     esp_partition_mmap_handle_t out_handle;
     const void *binary_address;
     const esp_partition_t *partition;
@@ -43,29 +51,44 @@ static void send_binary(esp_mqtt_client_handle_t cliente){
     int binary_size = MIN(CONFIG_BROKER_BIN_SIZE_TO_SEND, partition->size);
     int msg_id = esp_mqtt_client_publish(cliente, "/topic/binary", binary_address, binary_size, 0, 0);
     ESP_LOGI(TAG, "binary sent with msg_id=%d", msg_id);
-}
+}*/
 
 //Funcion para iniciar MQTT
-esp_err_t init_publisher_mqtt(void *event_handler, char *device_token, char *cert){
+esp_err_t init_publisher_mqtt(void *event_handler, char *device_token){
     esp_err_t error;
     char url[256];
-
-    if(sniprintf(url, sizeof(url), "mqtts://%s", CONFIG_BROKER_URL) > sizeof(url)){
-        ESP_LOGE(TAG, "La url del broker MQTT es demasiado larga");
-        return ESP_ERR_INVALID_SIZE;
-    }
+    #if CONFIG_MQTT_USE_SECURE_VERSION
+        if(sniprintf(url, sizeof(url), "mqtts://%s:%s", CONFIG_BROKER_URL, CONFIG_MQTT_PORT) > sizeof(url)){
+            ESP_LOGE(TAG, "La url del broker MQTT es demasiado larga");
+            return ESP_ERR_INVALID_SIZE;
+        }
+    #else
+        if(sniprintf(url, sizeof(url), "mqtt://%s:%s", CONFIG_BROKER_URL, CONFIG_MQTT_PORT) > sizeof(url)){
+            ESP_LOGE(TAG, "La url del broker MQTT es demasiado larga");
+            return ESP_ERR_INVALID_SIZE;
+        }
+    #endif
 
     esp_mqtt_client_config_t mqtt_config = {
-        .broker.address.uri = url,
-        .broker.verification.certificate  = (const char *) cert,
-        .credentials.username = CONFIG_MQTT_USERNAME,
+        //.broker.address.uri = url,
+        .broker.address.uri = "mqtt://test.mosquitto.org:1883",
+        #if CONFIG_MQTT_USE_SECURE_VERSION
+            .broker.verification.use_global_ca_store = false,
+            .broker.verification.certificate  = cert,
+            .broker.verification.certificate_len = server_cert_pem_end - server_cert_pem_start,
+            .broker.verification.skip_cert_common_name_check = true,
+        #endif
+        //.credentials.username = CONFIG_MQTT_USERNAME,
         //.credentials.username = device_token, // El token de acceso es el nombre de usuario
-        .credentials.authentication.password = CONFIG_MQTT_PASSWORD,
-        .network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
-        //.network.transport = MQTT_TRANSPORT_OVER_SSL, // Habilita el transporte seguro
-        //.credentials.authentication.certificate = node_cert_pem_start, /* Certificado PEM para la conexión segura */
-        //.client_cert_pem = (const unsigned char *) node_cert_pem_start,
-        //.client_key_pem = (const unsigned char *)node_key_pem_start
+
+        #if CONFIG_MQTT_USE_LWT
+            .session.last_will.topic = CONFIG_LWT_TOPIC,
+            .session.last_will.msg = CONFIG_LWT_MESSAGE,
+            .session.last_will.msg_len = strelen(CONFIG_LWT_MESSAGE),
+            .session.keepalive = CONFIG_KEEPALIVE
+        #endif
+        
+        //.network.reconnect_timeout_ms = CONFIG_RECONNECT_TIMEOUT,
     };
 
 
@@ -75,11 +98,13 @@ esp_err_t init_publisher_mqtt(void *event_handler, char *device_token, char *cer
         ESP_LOGE(TAG, "Error en esp_mqtt_client_init");
         return ESP_ERR_INVALID_ARG;
     }
-    error = esp_mqtt_client_register_event(cliente_mqtt, ESP_EVENT_ANY_ID, event_handler, NULL);
+    ESP_LOGI(TAG, "esp_mqtt_client_init OK");
+    error = esp_mqtt_client_register_event(cliente_mqtt, ESP_EVENT_ANY_ID, mqtt_handler, NULL);
     if (error != ESP_OK) {
-        ESP_LOGE(TAG, "Error en esp_mqtt_client_register_event: %s", esp_err_to_name(error));
+        ESP_LOGE(TAG, "Error en esp_mqtt_client_register_event: %s (0x%x)", esp_err_to_name(error), error);
         return error;
     }
+    ESP_LOGI(TAG, "esp_mqtt_client_register_event OK");
     mqtt_event_handler = event_handler;
 
     return ESP_OK; 
@@ -303,7 +328,7 @@ static void reset_mqtt_client(){
     ESP_LOGI(TAG, "Reiniciando cliente MQTT...");
     vTaskDelay(2000 / portMAX_DELAY);
     ESP_ERROR_CHECK(deinit_publisher_mqtt());
-    ESP_ERROR_CHECK(init_publisher_mqtt(mqtt_event_handler, DEVICE_TOKEN, (char*) node_cert_pem_start));
+    ESP_ERROR_CHECK(init_publisher_mqtt(mqtt_event_handler, DEVICE_TOKEN));
     ESP_ERROR_CHECK(start_publisher());
     vTaskDelete(NULL);
 }
@@ -375,7 +400,9 @@ static void mqtt_handler(void *handler_args, esp_event_base_t base, int32_t even
             ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
             ESP_LOGE(TAG, "Could not connect to MQTT broker.");
             notify_node_event("Node disconnected");
-            publish_lwt();
+            #if CONFIG_MQTT_USE_LWT
+                publish_lwt();
+            #endif
             break;
         case MQTT_EVENT_SUBSCRIBED:
             ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
@@ -405,13 +432,13 @@ static void mqtt_handler(void *handler_args, esp_event_base_t base, int32_t even
                 ESP_LOGI(TAG, "Tamaño mensaje MQTT %d", event->data_len);
             }
             //Se llama a mqtt_configure_callback
-            mqtt_configure_callback((const char *) event->topic, (const char *) event->data);
+            //mqtt_configure_callback((const char *) event->topic, (const char *) event->data);
             printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
             printf("DATA=%.*s\r\n", event->data_len, event->data);
 
             if (strncmp(event->data, "send binary please", event->data_len) == 0) {
                 ESP_LOGI(TAG, "Sending the binary");
-                send_binary(client);
+                //send_binary(client);
             }
             if(!is_provisioned){
                 is_provisioned = true;
@@ -430,6 +457,10 @@ static void mqtt_handler(void *handler_args, esp_event_base_t base, int32_t even
                 log_error_if_nonzero("captured as transport's socket errno",  event->error_handle->esp_transport_sock_errno);
                 ESP_LOGI(TAG, "Last errno string (%s)", strerror(event->error_handle->esp_transport_sock_errno));
 
+            }else if (event->error_handle->error_type == MQTT_ERROR_TYPE_CONNECTION_REFUSED) {
+                ESP_LOGI(TAG, "Connection refused error: 0x%x", event->error_handle->connect_return_code);
+            } else {
+                ESP_LOGW(TAG, "Unknown error type: 0x%x", event->error_handle->error_type);
             }
             break;
         default:
@@ -439,6 +470,10 @@ static void mqtt_handler(void *handler_args, esp_event_base_t base, int32_t even
 }
 
 void init_mqtt(){
-    ESP_ERROR_CHECK(init_publisher_mqtt(mqtt_event_handler, DEVICE_TOKEN, (char *) node_cert_pem_start));
+    ESP_ERROR_CHECK(init_publisher_mqtt(mqtt_handler, DEVICE_TOKEN));
 }
-//#endif
+
+#ifdef __cplusplus
+}
+#endif
+#endif

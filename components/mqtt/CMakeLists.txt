@@ -1,7 +1,7 @@
 idf_component_register(SRCS "mqtt_api.c"
                        INCLUDE_DIRS "."
-                       REQUIRES mqtt esp_event esp_timer nvs_flash json protocol_examples_common tcp_transport qrcode
-                       EMBED_TXTFILES node_cert.pem)
+                       REQUIRES esp-mqtt mqtt esp_event esp_timer nvs_flash json protocol_examples_common tcp_transport qrcode
+                       EMBED_TXTFILES node_cert.pem node_new_cert.pem node_key.pem)
                        
 set(EXTRA_COMPONENT_DIRS $ENV{IDF_PATH}/components/esp-mqtt/include)
 set(EXTRA_COMPONENT_DIRS $ENV{IDF_PATH}/examples/common_components/protocol_examples_common)

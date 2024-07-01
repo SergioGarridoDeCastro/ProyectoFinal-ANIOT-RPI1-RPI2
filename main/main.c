@@ -26,6 +26,7 @@
 #include <portmacro.h>
 #include <sntp.h>
 #include "esp_sntp.h"
+#include <esp_netif_sntp.h>
 #include "mqtt_api.h"
 #include "provisionamiento.h"
 #include "wifi_station.h"
@@ -133,6 +134,60 @@ void wifi_handler(void *handler_arg, esp_event_base_t base, int32_t id, void *ev
 }
 
 
+static void time_sync_notification_cb(struct timeval *tv)
+{
+    ESP_LOGI(TAG, "Notification of a time synchronization event");
+}
+
+static int initialize_sntp(void)
+{
+    ESP_LOGI(TAG, "Initializing SNTP");
+    
+    esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("pool.ntp.org");
+    config.smooth_sync = true;
+    config.sync_cb = time_sync_notification_cb;
+    
+    esp_err_t sntp_init_result = esp_netif_sntp_init(&config);
+    if (sntp_init_result != ESP_OK) {
+        ESP_LOGE(TAG, "SNTP initialization failed with error %d", sntp_init_result);
+        return sntp_init_result;
+    }
+
+    // Esperar a que la sincronización sea exitosa
+    int retry = 0;
+    const int retry_count = 10;
+    while (esp_netif_sntp_sync_wait(2000 / portTICK_PERIOD_MS) == ESP_ERR_TIMEOUT && ++retry < retry_count) {
+        ESP_LOGI(TAG, "Esperando sincronización de tiempo... (%d/%d)", retry, retry_count);
+    }
+
+    if (retry == retry_count) {
+        ESP_LOGE(TAG, "Sincronización de tiempo fallida");
+        esp_netif_sntp_deinit();
+        return ESP_ERR_TIMEOUT;
+    }
+
+    // Configurar zona horaria
+    setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1); // Configuración para UTC+1 y horario de verano
+    tzset();
+
+    esp_netif_sntp_deinit();
+    return ESP_OK;
+}
+
+static void obtain_time(void){
+    if(initialize_sntp() != ESP_OK){
+        ESP_LOGE(TAG, "SNTP initialization failed");
+        return;
+    }
+
+    time_t now;
+    struct tm timeinfo;
+    time(&now);
+    localtime_r(&now, &timeinfo);
+
+    ESP_LOGI(TAG, "La hora actual es: %s", asctime(&timeinfo));
+}
+
 void states_machine()
 {
    /* state_machine_t estado_actual = STATE_INIT;
@@ -156,25 +211,36 @@ void states_machine()
         case STATE_PROVISIONED:
             prov_info_t* info_wifi = get_wifi_info();
             ESP_ERROR_CHECK(wifi_connect(info_wifi->wifi_ssid, info_wifi->wifi_pass));
-            init_ble();
+            //init_ble();
             ESP_LOGI(TAG, "Conectado a %s", info_wifi->wifi_ssid);
+            obtain_time();
+            #if CONFIG_USE_MQTT_PROTOCOL
+                init_mqtt();
+                start_publisher();
+                ESP_LOGI(TAG, "Publisher MQTT iniciado correctamente");
+            #endif
             current_state = STATE_MONITORITATION;
             break;
         case STATE_MONITORITATION:
             //double distancia = estimacion_de_aforo();
             ESP_LOGI(TAG, "BLE iniciado correctamente");
-
             current_state = STATE_TRANSMISION;
             break;
         case STATE_TRANSMISION:
-            #if CONFIG_USE_COAP
+            #if CONFIG_USE_COAP_PROTOCOL
                 //Envio Coap
                 ESP_LOGI(TAG, "Transmision por COAP");
-            #elif CONFIG_USE_MQTT
+            #elif CONFIG_USE_MQTT_PROTOCOL
+                
                 ESP_LOGI(TAG, "Transmision por MQTT");
-                publish_data_si7021(1,2, 3, valorSensor);
-                publish_data_sgp30(1,2, 3, valorSensor);
-                publish("", aforo);
+                char * topic = "test/topic";
+                subscribe(topic);
+                ESP_LOGI(TAG, "Suscrito a topic %s", topic);
+                publish(topic, "Test ESP32");
+        
+                //publish_data_si7021(1,2, 3, valorSensor);
+                //publish_data_sgp30(1,2, 3, valorSensor);
+                //publish("", aforo);
             #else
                 ESP_LOGE(TAG, "Protocolo de transporte no soportado");
             #endif
@@ -192,38 +258,6 @@ void states_machine()
     }
 }
 
-/*
-static int initialize_sntp(void){
-        ESP_LOGI(TAG, "Initializing SNTP");
-        esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("poolntp.org");
-        config.timezone = 1; //UTC+1 para Madrid
-        //config.smooth_sync = true;
-        //config.sync_cb = time_sync_notification_cb;
-        esp_err_t sntp_init_result = esp_netif_sntp_init(&config);
-        if(sntp_init_result != ESP_OK){
-            ESP_LOGE(TAG, "SNTP initialization failed with error %d", sntp_init_result);
-            return sntp_init_result;
-        }
-        return ESP_OK;
-}
-
-static void obtain_time(void){
-    if(initialize_sntp() != ESP_OK){
-        ESP_LOGE(TAG, "SNTP initialization failed");
-        return;
-    }
-
-    struct tm timeinfo = {0};
-    int retry = 0;
-    const int retry_count = 10;
-    time_t now;
-
-    while(esp_netif_sntp_sync_wait(portTICK_PERIOD_MS) == ESP_ERR_TIMEOUT &&  ++retry < retry_count ){
-        ESP_LOGI(TAG, "Esperando... (%d/%d)", retry, retry_count);
-    }
-    time(&now);
-    localtime_r(&now, &timeinfo);
-}*/
 
 /*
 // handler para el wifi disconected
@@ -268,8 +302,6 @@ void app_main(void)
     esp_pm_configure(&config_power_mode);
     ESP_ERROR_CHECK(err);
     //    muestradora(1000000);
-
-
 
     
     //ESP_ERROR_CHECK(wifi_connect(CONFIG_ESP_WIFI_SSID, CONFIG_ESP_WIFI_PASSWORD));
