@@ -1,0 +1,50 @@
+[1/9] Performing build step for 'bootloader'
+[1/1] cmd.exe /C "cd /D C:\Users\Lenovo\OneDrive\MASTER_IOT\ProyectoAreaTecnologia\ProyectoFinal-ANIOT-RPI1-RPI2\build\bootloader\esp-idf\esptool_py && C:\Users\Lenovo\.espressif\python_env\idf5.1_py3.11_env\Scripts\python.exe C:/Users/Lenovo/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x1000 C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/bootloader/bootloader.bin"
+Bootloader binary size 0x6860 bytes. 0x7a0 bytes (7%) free.
+[2/7] Building C object esp-idf/mqtt/CMakeFiles/__idf_mqtt.dir/mqtt_api.c.obj
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c: In function 'init_publisher_mqtt':
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:73:32: warning: initialization of 'long unsigned int' from 'char *' makes integer from pointer without a cast [-Wint-conversion]
+   73 |         .broker.address.port = CONFIG_MQTT_PORT,
+      |                                ^~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:73:32: note: (near initialization for 'mqtt_config.broker.address.port')
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c: In function 'publish_data_si7021':
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:272:13: warning: unused variable 'cbor_buffer' [-Wunused-variable]
+  272 |     uint8_t cbor_buffer[512];  // Ajusta el tamaño según tus necesidades
+      |             ^~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c: In function 'mqtt_handler':
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:376:9: warning: unused variable 'msg_id' [-Wunused-variable]
+  376 |     int msg_id;
+      |         ^~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:375:30: warning: unused variable 'client' [-Wunused-variable]
+  375 |     esp_mqtt_client_handle_t client = event->client;
+      |                              ^~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c: At top level:
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:332:13: warning: 'reset_mqtt_client' defined but not used [-Wunused-function]
+  332 | static void reset_mqtt_client(){
+      |             ^~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:268:13: warning: 'publish_data_si7021' defined but not used [-Wunused-function]
+  268 | static void publish_data_si7021(int piso, int aula, int numero, cJSON *valor_sensor){
+      |             ^~~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:244:13: warning: 'publish_data_sgp30' defined but not used [-Wunused-function]
+  244 | static void publish_data_sgp30(int piso, int aula, int numero, cJSON *valor_sensor){
+      |             ^~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:185:13: warning: 'suscribe_topic_provisioning' defined but not used [-Wunused-function]
+  185 | static void suscribe_topic_provisioning(){
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:22:12: warning: 'sampling_frequency' defined but not used [-Wunused-variable]
+   22 | static int sampling_frequency = 30;
+      |            ^~~~~~~~~~~~~~~~~~
+[3/7] Linking C static library esp-idf\mqtt\libmqtt.a
+[4/7] Generating ld/sections.ld
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/esp-si7021/Kconfig.projbuild:1: warning: style: quotes recommended around 'esp-si7021' in 'menu esp-si7021'
+[5/7] Linking CXX executable ProyectoFinal-ANIOT-RPI1-RPI2.elf
+[6/7] Generating binary image from built executable
+esptool.py v4.7.0
+Creating esp32 image...
+Merged 27 ELF sections
+Successfully created esp32 image.
+Generated C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/ProyectoFinal-ANIOT-RPI1-RPI2.bin
+[7/7] cmd.exe /C "cd /D C:\Users\Lenovo\OneDrive\MASTER_IOT\ProyectoAreaTecnologia\ProyectoFinal-ANIOT-RPI1-RPI2\build\esp-idf\esptool_py && C:\Users\Lenovo\.espressif\python_env\idf5.1_py3.11_env\Scripts\python.exe C:/Users/Lenovo/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 partition --type app C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/partition_table/partition-table.bin C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/ProyectoFinal-ANIOT-RPI1-RPI2.bin"
+Warning: 2/3 app partitions are too small for binary ProyectoFinal-ANIOT-RPI1-RPI2.bin size 0x1082e0:
+  - Part 'ota_0' 0/16 @ 0x160000 size 0x30000 (overflow 0xd82e0)
+  - Part 'ota_1' 0/17 @ 0x190000 size 0x30000 (overflow 0xd82e0)

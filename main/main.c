@@ -14,9 +14,6 @@
 
 #include "event_source.h"
 #include "esp_event_base.h"
-#include "muestradora.h"
-#include "i2c_config.h"
-#include "nvs_component.h"
 #include <string.h>
 #include "nvs_flash.h"
 #include "nvs.h"
@@ -30,8 +27,6 @@
 #include "mqtt_api.h"
 #include "provisionamiento.h"
 #include "wifi_station.h"
-#include "scan_gap_ble.h"
-#include "ota.h"
 #include "protocol_examples_common.h"
 static const char *TAG = "user_event_loops";
 static char *DEVICE_TOKEN = NULL;
@@ -70,7 +65,7 @@ esp_event_loop_handle_t loop_monitor_main;
 esp_event_loop_handle_t loop_wifi;
 
 
-
+/*
 //Handler para la monitorizacion
 void monitorize_handler(void *handler_arg, esp_event_base_t base, int32_t id, void *event_data)
 {
@@ -92,7 +87,7 @@ void monitorize_handler(void *handler_arg, esp_event_base_t base, int32_t id, vo
     default:
         break;
     }
-}
+}*/
 
 //Handler para el provisionamiento
 void provisionamiento_handler(void *handler_arg, esp_event_base_t base, int32_t id, void *event_data){
@@ -279,11 +274,11 @@ void app_main(void)
     double temp;
 
     // init temperature controller
-    i2c_master_init();
+    //i2c_master_init();
     ESP_ERROR_CHECK(esp_event_loop_create_default());
-    ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_TEMP, monitorize_handler, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_ECO2, monitorize_handler, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_TVOC, monitorize_handler, NULL));
+    //ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_TEMP, monitorize_handler, NULL));
+    //ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_ECO2, monitorize_handler, NULL));
+    //ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_TVOC, monitorize_handler, NULL));
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)

@@ -1,0 +1,32 @@
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/esp-si7021/Kconfig.projbuild:1: warning: style: quotes recommended around 'esp-si7021' in 'menu esp-si7021'
+Compiler supported targets: xtensa-esp32-elf
+
+CMake Error in components/mqtt/CMakeLists.txt:
+  Cannot find source file:
+
+    C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/certs/node_cert.pem
+
+  Tried extensions .c .C .c++ .cc .cpp .cxx .cu .mpp .m .M .mm .ixx .cppm .h
+  .hh .h++ .hm .hpp .hxx .in .txx .f .F .for .f77 .f90 .f95 .f03 .hip .ispc
+
+
+CMake Error in components/mqtt/CMakeLists.txt:
+  Cannot find source file:
+
+    C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/certs/node_new_cert.pem
+
+  Tried extensions .c .C .c++ .cc .cpp .cxx .cu .mpp .m .M .mm .ixx .cppm .h
+  .hh .h++ .hm .hpp .hxx .in .txx .f .F .for .f77 .f90 .f95 .f03 .hip .ispc
+
+
+CMake Error in components/mqtt/CMakeLists.txt:
+  Cannot find source file:
+
+    C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/certs/node_key.pem
+
+  Tried extensions .c .C .c++ .cc .cpp .cxx .cu .mpp .m .M .mm .ixx .cppm .h
+  .hh .h++ .hm .hpp .hxx .in .txx .f .F .for .f77 .f90 .f95 .f03 .hip .ispc
+
+
+CMake Generate step failed.  Build files cannot be regenerated correctly.
+ninja: error: rebuilding 'build.ninja': subcommand failed

@@ -1,0 +1,143 @@
+[0/1] Re-running CMake...
+-- Component directory C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/coap does not contain a CMakeLists.txt file. No component will be added
+-- ccache will be used for faster recompilation
+-- Building ESP-IDF components for target esp32
+Processing 2 dependencies:
+[1/2] espressif/coap (4.3.4~3)
+[2/2] idf (5.1.4)
+-- Project sdkconfig file C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/sdkconfig
+-- App "ProyectoFinal-ANIOT-RPI1-RPI2" version: f7f0600-dirty
+-- Adding linker script C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/esp-idf/esp_system/ld/memory.ld
+-- Adding linker script C:/Users/Lenovo/esp-idf/components/esp_system/ld/esp32/sections.ld.in
+-- Adding linker script C:/Users/Lenovo/esp-idf/components/esp_rom/esp32/ld/esp32.rom.ld
+-- Adding linker script C:/Users/Lenovo/esp-idf/components/esp_rom/esp32/ld/esp32.rom.api.ld
+-- Adding linker script C:/Users/Lenovo/esp-idf/components/esp_rom/esp32/ld/esp32.rom.libgcc.ld
+-- Adding linker script C:/Users/Lenovo/esp-idf/components/esp_rom/esp32/ld/esp32.rom.newlib-data.ld
+-- Adding linker script C:/Users/Lenovo/esp-idf/components/esp_rom/esp32/ld/esp32.rom.syscalls.ld
+-- Adding linker script C:/Users/Lenovo/esp-idf/components/esp_rom/esp32/ld/esp32.rom.newlib-funcs.ld
+-- Adding linker script C:/Users/Lenovo/esp-idf/components/soc/esp32/ld/esp32.peripherals.ld
+-- Components: api_rest app_trace app_update bootloader bootloader_support bt cmock coap_client console cxx driver efuse esp-mqtt esp-si7021 esp-tls esp32_SGP30 esp_adc esp_app_format esp_coex esp_common esp_eth esp_event esp_gdbstub esp_hid esp_http_client esp_http_server esp_https_ota esp_https_server esp_hw_support esp_lcd esp_local_ctrl esp_mm esp_netif esp_netif_stack esp_partition esp_phy esp_pm esp_psram esp_ringbuf esp_rom esp_system esp_timer esp_wifi espcoredump espressif__cbor espressif__coap espressif__qrcode esptool_py fatfs freertos hal heap http_parser i2c_config idf_test ieee802154 json log lwip main mbedtls mqtt muestradora newlib nvs_component nvs_flash openthread ota partition_table perfmon protobuf-c protocol_examples_common protocomm provisionamiento pthread scan_ble scan_gap_ble sdmmc soc spi_flash spiffs tcp_transport ulp unity usb vfs wear_levelling wifi_provisioning wifi_station wpa_supplicant xtensa
+-- Component paths: C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/api_rest C:/Users/Lenovo/esp-idf/components/app_trace C:/Users/Lenovo/esp-idf/components/app_update C:/Users/Lenovo/esp-idf/components/bootloader C:/Users/Lenovo/esp-idf/components/bootloader_support C:/Users/Lenovo/esp-idf/components/bt C:/Users/Lenovo/esp-idf/components/cmock C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/coap_client C:/Users/Lenovo/esp-idf/components/console C:/Users/Lenovo/esp-idf/components/cxx C:/Users/Lenovo/esp-idf/components/driver C:/Users/Lenovo/esp-idf/components/efuse C:/Users/Lenovo/esp-idf/components/mqtt/esp-mqtt C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/esp-si7021 C:/Users/Lenovo/esp-idf/components/esp-tls C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/esp32_SGP30 C:/Users/Lenovo/esp-idf/components/esp_adc C:/Users/Lenovo/esp-idf/components/esp_app_format C:/Users/Lenovo/esp-idf/components/esp_coex C:/Users/Lenovo/esp-idf/components/esp_common C:/Users/Lenovo/esp-idf/components/esp_eth C:/Users/Lenovo/esp-idf/components/esp_event C:/Users/Lenovo/esp-idf/components/esp_gdbstub C:/Users/Lenovo/esp-idf/components/esp_hid C:/Users/Lenovo/esp-idf/components/esp_http_client C:/Users/Lenovo/esp-idf/components/esp_http_server C:/Users/Lenovo/esp-idf/components/esp_https_ota C:/Users/Lenovo/esp-idf/components/esp_https_server C:/Users/Lenovo/esp-idf/components/esp_hw_support C:/Users/Lenovo/esp-idf/components/esp_lcd C:/Users/Lenovo/esp-idf/components/esp_local_ctrl C:/Users/Lenovo/esp-idf/components/esp_mm C:/Users/Lenovo/esp-idf/components/esp_netif C:/Users/Lenovo/esp-idf/components/esp_netif_stack C:/Users/Lenovo/esp-idf/components/esp_partition C:/Users/Lenovo/esp-idf/components/esp_phy C:/Users/Lenovo/esp-idf/components/esp_pm C:/Users/Lenovo/esp-idf/components/esp_psram C:/Users/Lenovo/esp-idf/components/esp_ringbuf C:/Users/Lenovo/esp-idf/components/esp_rom C:/Users/Lenovo/esp-idf/components/esp_system C:/Users/Lenovo/esp-idf/components/esp_timer C:/Users/Lenovo/esp-idf/components/esp_wifi C:/Users/Lenovo/esp-idf/components/espcoredump C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/espressif__cbor C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/managed_components/espressif__coap C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/espressif__qrcode C:/Users/Lenovo/esp-idf/components/esptool_py C:/Users/Lenovo/esp-idf/components/fatfs C:/Users/Lenovo/esp-idf/components/freertos C:/Users/Lenovo/esp-idf/components/hal C:/Users/Lenovo/esp-idf/components/heap C:/Users/Lenovo/esp-idf/components/http_parser C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/i2c_config C:/Users/Lenovo/esp-idf/components/idf_test C:/Users/Lenovo/esp-idf/components/ieee802154 C:/Users/Lenovo/esp-idf/components/json C:/Users/Lenovo/esp-idf/components/log C:/Users/Lenovo/esp-idf/components/lwip C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/main C:/Users/Lenovo/esp-idf/components/mbedtls C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/muestradora C:/Users/Lenovo/esp-idf/components/newlib C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/nvs_component C:/Users/Lenovo/esp-idf/components/nvs_flash C:/Users/Lenovo/esp-idf/components/openthread C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/ota C:/Users/Lenovo/esp-idf/components/partition_table C:/Users/Lenovo/esp-idf/components/perfmon C:/Users/Lenovo/esp-idf/components/protobuf-c C:/Users/Lenovo/esp-idf/examples/common_components/protocol_examples_common C:/Users/Lenovo/esp-idf/components/protocomm C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/provisionamiento C:/Users/Lenovo/esp-idf/components/pthread C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/scan_ble C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/scan_gap_ble C:/Users/Lenovo/esp-idf/components/sdmmc C:/Users/Lenovo/esp-idf/components/soc C:/Users/Lenovo/esp-idf/components/spi_flash C:/Users/Lenovo/esp-idf/components/spiffs C:/Users/Lenovo/esp-idf/components/tcp_transport C:/Users/Lenovo/esp-idf/components/ulp C:/Users/Lenovo/esp-idf/components/unity C:/Users/Lenovo/esp-idf/components/usb C:/Users/Lenovo/esp-idf/components/vfs C:/Users/Lenovo/esp-idf/components/wear_levelling C:/Users/Lenovo/esp-idf/components/wifi_provisioning C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/wifi_station C:/Users/Lenovo/esp-idf/components/wpa_supplicant C:/Users/Lenovo/esp-idf/components/xtensa
+-- Configuring done
+-- Generating done
+-- Build files have been written to: C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build
+[1/11] Performing build step for 'bootloader'
+[1/1] cmd.exe /C "cd /D C:\Users\Lenovo\OneDrive\MASTER_IOT\ProyectoAreaTecnologia\ProyectoFinal-ANIOT-RPI1-RPI2\build\bootloader\esp-idf\esptool_py && C:\Users\Lenovo\.espressif\python_env\idf5.1_py3.11_env\Scripts\python.exe C:/Users/Lenovo/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x1000 C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/bootloader/bootloader.bin"
+Bootloader binary size 0x6860 bytes. 0x7a0 bytes (7%) free.
+[2/9] Building C object esp-idf/mqtt/CMakeFiles/__idf_mqtt.dir/mqtt_api.c.obj
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c: In function 'publish_data_si7021':
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:246:13: warning: unused variable 'cbor_buffer' [-Wunused-variable]
+  246 |     uint8_t cbor_buffer[512];  // Ajusta el tamaño según tus necesidades
+      |             ^~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c: In function 'mqtt_handler':
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:350:9: warning: unused variable 'msg_id' [-Wunused-variable]
+  350 |     int msg_id;
+      |         ^~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c: At top level:
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:345:13: warning: 'mqtt_handler' defined but not used [-Wunused-function]
+  345 | static void mqtt_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data){
+      |             ^~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:306:13: warning: 'reset_mqtt_client' defined but not used [-Wunused-function]
+  306 | static void reset_mqtt_client(){
+      |             ^~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:242:13: warning: 'publish_data_si7021' defined but not used [-Wunused-function]
+  242 | static void publish_data_si7021(int piso, int aula, int numero, cJSON *valor_sensor){
+      |             ^~~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:218:13: warning: 'publish_data_sgp30' defined but not used [-Wunused-function]
+  218 | static void publish_data_sgp30(int piso, int aula, int numero, cJSON *valor_sensor){
+      |             ^~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:159:13: warning: 'suscribe_topic_provisioning' defined but not used [-Wunused-function]
+  159 | static void suscribe_topic_provisioning(){
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:22:12: warning: 'sampling_frequency' defined but not used [-Wunused-variable]
+   22 | static int sampling_frequency = 30;
+      |            ^~~~~~~~~~~~~~~~~~
+[3/9] Linking C static library esp-idf\mqtt\libmqtt.a
+[4/9] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/main.c.obj
+In file included from C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/main/main.c:27:
+C:/Users/Lenovo/esp-idf/components/lwip/include/apps/sntp/sntp.h:9:2: warning: #warning "sntp.h in IDF's lwip port folder is deprecated. Please include esp_sntp.h" [-Wcpp]
+    9 | #warning "sntp.h in IDF's lwip port folder is deprecated. Please include esp_sntp.h"
+      |  ^~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/main/main.c: In function 'app_main':
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/main/main.c:249:12: warning: unused variable 'temp' [-Wunused-variable]
+  249 |     double temp;
+      |            ^~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/main/main.c:248:13: warning: unused variable 'time_sleep' [-Wunused-variable]
+  248 |     int64_t time_sleep;
+      |             ^~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/main/main.c:247:13: warning: unused variable 't_after_us' [-Wunused-variable]
+  247 |     int64_t t_after_us;
+      |             ^~~~~~~~~~
+In file included from C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/main/main.c:29:
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.h: At top level:
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.h:26:13: warning: 'notify_node_event' declared 'static' but never defined [-Wunused-function]
+   26 | static void notify_node_event(const char *event);
+      |             ^~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.h:27:13: warning: 'suscribe_topic_provisioning' declared 'static' but never defined [-Wunused-function]
+   27 | static void suscribe_topic_provisioning();
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.h:28:13: warning: 'publish_data_sgp30' declared 'static' but never defined [-Wunused-function]
+   28 | static void publish_data_sgp30(int piso, int aula, int numero, cJSON *valor_sensor);
+      |             ^~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.h:29:13: warning: 'publish_data_si7021' declared 'static' but never defined [-Wunused-function]
+   29 | static void publish_data_si7021(int piso, int aula, int numero, cJSON *valor_sensor);
+      |             ^~~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.h:30:13: warning: 'publish_lwt' declared 'static' but never defined [-Wunused-function]
+   30 | static void publish_lwt(void);
+      |             ^~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.h:32:13: warning: 'log_error_if_nonzero' declared 'static' but never defined [-Wunused-function]
+   32 | static void log_error_if_nonzero(const char *message, int error_code);
+      |             ^~~~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.h:33:13: warning: 'mqtt_handler' declared 'static' but never defined [-Wunused-function]
+   33 | static void mqtt_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data);
+      |             ^~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.h:38:18: warning: 'parse_received_device_token_thingsboard' declared 'static' but never defined [-Wunused-function]
+   38 | static esp_err_t parse_received_device_token_thingsboard(char *response_tb, int response_tb_len);
+      |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.h:39:13: warning: 'reset_mqtt_client' declared 'static' but never defined [-Wunused-function]
+   39 | static void reset_mqtt_client();
+      |             ^~~~~~~~~~~~~~~~~
+In file included from C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/main/main.c:32:
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/scan_gap_ble/scan_gap_ble.h:30:13: warning: 'esp_gap_callback' declared 'static' but never defined [-Wunused-function]
+   30 | static void esp_gap_callback(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
+      |             ^~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/scan_gap_ble/scan_gap_ble.h:31:13: warning: 'esp_gattc_cb' declared 'static' but never defined [-Wunused-function]
+   31 | static void esp_gattc_cb(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
+      |             ^~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/scan_gap_ble/scan_gap_ble.h:32:13: warning: 'gattc_profile_event_handler' declared 'static' but never defined [-Wunused-function]
+   32 | static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/scan_gap_ble/scan_gap_ble.h:36:15: warning: 'estimate_distance' declared 'static' but never defined [-Wunused-function]
+   36 | static double estimate_distance();
+      |               ^~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/scan_gap_ble/scan_gap_ble.h:37:13: warning: 'update_ble_devices_list' declared 'static' but never defined [-Wunused-function]
+   37 | static void update_ble_devices_list(esp_bd_addr_t bd_addr, int rssi, int estimated_distance);
+      |             ^~~~~~~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/scan_gap_ble/scan_gap_ble.h:38:13: warning: 'forget_undetected_devices' declared 'static' but never defined [-Wunused-function]
+   38 | static void forget_undetected_devices(void);
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/scan_gap_ble/scan_gap_ble.h:39:13: warning: 'remove_device' declared 'static' but never defined [-Wunused-function]
+   39 | static void remove_device(int index);
+      |             ^~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/scan_gap_ble/scan_gap_ble.h:40:13: warning: 'scan_timer_callback' declared 'static' but never defined [-Wunused-function]
+   40 | static void scan_timer_callback(void *arg);
+      |             ^~~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/scan_gap_ble/scan_gap_ble.h:41:12: warning: 'find_device_index' declared 'static' but never defined [-Wunused-function]
+   41 | static int find_device_index(esp_bd_addr_t bd_addr);
+      |            ^~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/main/main.c:36:14: warning: 'DEVICE_TOKEN' defined but not used [-Wunused-variable]
+   36 | static char *DEVICE_TOKEN = NULL;
+      |              ^~~~~~~~~~~~
+[5/9] Linking C static library esp-idf\main\libmain.a
+[6/9] Generating ld/sections.ld
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/esp-si7021/Kconfig.projbuild:1: warning: style: quotes recommended around 'esp-si7021' in 'menu esp-si7021'
+[7/9] Linking CXX executable ProyectoFinal-ANIOT-RPI1-RPI2.elf
+FAILED: ProyectoFinal-ANIOT-RPI1-RPI2.elf 
+cmd.exe /C "cd . && C:\Users\Lenovo\.espressif\tools\xtensa-esp32-elf\esp-12.2.0_20230208\xtensa-esp32-elf\bin\xtensa-esp32-elf-g++.exe -mlongcalls -Wno-frame-address -Wl,--cref -Wl,--defsym=IDF_TARGET_ESP32=0 -Wl,--Map=C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/ProyectoFinal-ANIOT-RPI1-RPI2.map -Wl,--no-warn-rwx-segments -fno-rtti -fno-lto -Wl,--gc-sections -Wl,--warn-common -T esp32.peripherals.ld -T esp32.rom.ld -T esp32.rom.api.ld -T esp32.rom.libgcc.ld -T esp32.rom.newlib-data.ld -T esp32.rom.syscalls.ld -T esp32.rom.newlib-funcs.ld -T memory.ld -T sections.ld @CMakeFiles\ProyectoFinal-ANIOT-RPI1-RPI2.elf.rsp -o ProyectoFinal-ANIOT-RPI1-RPI2.elf  && cd ."
+c:/users/lenovo/.espressif/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin/../lib/gcc/xtensa-esp32-elf/12.2.0/../../../../xtensa-esp32-elf/bin/ld.exe: esp-idf/mqtt/libmqtt.a(mqtt_api.c.obj):(.literal.init_publisher_mqtt+0x24): undefined reference to `esp_mqtt_client_init'
+c:/users/lenovo/.espressif/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin/../lib/gcc/xtensa-esp32-elf/12.2.0/../../../../xtensa-esp32-elf/bin/ld.exe: esp-idf/mqtt/libmqtt.a(mqtt_api.c.obj):(.literal.init_publisher_mqtt+0x28): undefined reference to `esp_mqtt_client_register_event'
+c:/users/lenovo/.espressif/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin/../lib/gcc/xtensa-esp32-elf/12.2.0/../../../../xtensa-esp32-elf/bin/ld.exe: esp-idf/mqtt/libmqtt.a(mqtt_api.c.obj): in function `init_publisher_mqtt':
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:62: undefined reference to `esp_mqtt_client_init'
+c:/users/lenovo/.espressif/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin/../lib/gcc/xtensa-esp32-elf/12.2.0/../../../../xtensa-esp32-elf/bin/ld.exe: C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:79: undefined reference to `esp_mqtt_client_register_event'
+collect2.exe: error: ld returned 1 exit status
+ninja: build stopped: subcommand failed.

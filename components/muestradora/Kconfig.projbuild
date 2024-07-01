@@ -1,5 +1,0 @@
-menu 'Button_Configuration'
-    config PERIOD_TEMPERATURE
-        int "Number of SEC to wait until next read"
-        default 1 
-endmenu

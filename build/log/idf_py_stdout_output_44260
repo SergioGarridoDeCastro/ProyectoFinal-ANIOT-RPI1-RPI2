@@ -1,0 +1,44 @@
+[1/9] Performing build step for 'bootloader'
+[1/1] cmd.exe /C "cd /D C:\Users\Lenovo\OneDrive\MASTER_IOT\ProyectoAreaTecnologia\ProyectoFinal-ANIOT-RPI1-RPI2\build\bootloader\esp-idf\esptool_py && C:\Users\Lenovo\.espressif\python_env\idf5.1_py3.11_env\Scripts\python.exe C:/Users/Lenovo/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x1000 C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/bootloader/bootloader.bin"
+Bootloader binary size 0x6860 bytes. 0x7a0 bytes (7%) free.
+[2/7] Building C object esp-idf/mqtt/CMakeFiles/__idf_mqtt.dir/mqtt_api.c.obj
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c: In function 'publish_data_si7021':
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:246:13: warning: unused variable 'cbor_buffer' [-Wunused-variable]
+  246 |     uint8_t cbor_buffer[512];  // Ajusta el tamaño según tus necesidades
+      |             ^~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c: In function 'mqtt_handler':
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:350:9: warning: unused variable 'msg_id' [-Wunused-variable]
+  350 |     int msg_id;
+      |         ^~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c: At top level:
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:345:13: warning: 'mqtt_handler' defined but not used [-Wunused-function]
+  345 | static void mqtt_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data){
+      |             ^~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:306:13: warning: 'reset_mqtt_client' defined but not used [-Wunused-function]
+  306 | static void reset_mqtt_client(){
+      |             ^~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:242:13: warning: 'publish_data_si7021' defined but not used [-Wunused-function]
+  242 | static void publish_data_si7021(int piso, int aula, int numero, cJSON *valor_sensor){
+      |             ^~~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:218:13: warning: 'publish_data_sgp30' defined but not used [-Wunused-function]
+  218 | static void publish_data_sgp30(int piso, int aula, int numero, cJSON *valor_sensor){
+      |             ^~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:159:13: warning: 'suscribe_topic_provisioning' defined but not used [-Wunused-function]
+  159 | static void suscribe_topic_provisioning(){
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:22:12: warning: 'sampling_frequency' defined but not used [-Wunused-variable]
+   22 | static int sampling_frequency = 30;
+      |            ^~~~~~~~~~~~~~~~~~
+[3/7] Linking C static library esp-idf\mqtt\libmqtt.a
+[4/7] Generating ld/sections.ld
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/esp-si7021/Kconfig.projbuild:1: warning: style: quotes recommended around 'esp-si7021' in 'menu esp-si7021'
+[5/7] Linking CXX executable ProyectoFinal-ANIOT-RPI1-RPI2.elf
+FAILED: ProyectoFinal-ANIOT-RPI1-RPI2.elf 
+cmd.exe /C "cd . && C:\Users\Lenovo\.espressif\tools\xtensa-esp32-elf\esp-12.2.0_20230208\xtensa-esp32-elf\bin\xtensa-esp32-elf-g++.exe -mlongcalls -Wno-frame-address -Wl,--cref -Wl,--defsym=IDF_TARGET_ESP32=0 -Wl,--Map=C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/build/ProyectoFinal-ANIOT-RPI1-RPI2.map -Wl,--no-warn-rwx-segments -fno-rtti -fno-lto -Wl,--gc-sections -Wl,--warn-common -T esp32.peripherals.ld -T esp32.rom.ld -T esp32.rom.api.ld -T esp32.rom.libgcc.ld -T esp32.rom.newlib-data.ld -T esp32.rom.syscalls.ld -T esp32.rom.newlib-funcs.ld -T memory.ld -T sections.ld @CMakeFiles\ProyectoFinal-ANIOT-RPI1-RPI2.elf.rsp -o ProyectoFinal-ANIOT-RPI1-RPI2.elf  && cd ."
+c:/users/lenovo/.espressif/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin/../lib/gcc/xtensa-esp32-elf/12.2.0/../../../../xtensa-esp32-elf/bin/ld.exe: esp-idf/mqtt/libmqtt.a(mqtt_api.c.obj):(.literal.init_publisher_mqtt+0x24): undefined reference to `esp_mqtt_client_init'
+c:/users/lenovo/.espressif/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin/../lib/gcc/xtensa-esp32-elf/12.2.0/../../../../xtensa-esp32-elf/bin/ld.exe: esp-idf/mqtt/libmqtt.a(mqtt_api.c.obj):(.literal.init_publisher_mqtt+0x28): undefined reference to `esp_mqtt_client_register_event'
+c:/users/lenovo/.espressif/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin/../lib/gcc/xtensa-esp32-elf/12.2.0/../../../../xtensa-esp32-elf/bin/ld.exe: esp-idf/mqtt/libmqtt.a(mqtt_api.c.obj): in function `init_publisher_mqtt':
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:62: undefined reference to `esp_mqtt_client_init'
+c:/users/lenovo/.espressif/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin/../lib/gcc/xtensa-esp32-elf/12.2.0/../../../../xtensa-esp32-elf/bin/ld.exe: C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/mqtt/mqtt_api.c:79: undefined reference to `esp_mqtt_client_register_event'
+collect2.exe: error: ld returned 1 exit status
+ninja: build stopped: subcommand failed.

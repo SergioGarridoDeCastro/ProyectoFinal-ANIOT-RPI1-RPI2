@@ -1,0 +1,3 @@
+C:/Users/Lenovo/OneDrive/MASTER_IOT/ProyectoAreaTecnologia/ProyectoFinal-ANIOT-RPI1-RPI2/components/esp-si7021/Kconfig.projbuild:1: warning: style: quotes recommended around 'esp-si7021' in 'menu esp-si7021'
+Compiler supported targets: xtensa-esp32-elf
+
