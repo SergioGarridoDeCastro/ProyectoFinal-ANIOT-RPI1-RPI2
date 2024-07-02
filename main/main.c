@@ -1,12 +1,3 @@
-/* esp_event (event loop library) basic example
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
-
 #include "esp_log.h"
 
 #include "freertos/FreeRTOS.h"
@@ -16,35 +7,74 @@
 #include "esp_event_base.h"
 #include "muestradora.h"
 #include "i2c_config.h"
-#include "nvs_component.h"
 #include <string.h>
 #include "nvs_flash.h"
 #include "nvs.h"
 #include "esp_pm.h"
-#include <time.h>
 #include <sys/time.h>
-#include <sntp.h>
+#include "own_sntp.h"
 #include "ota.h"
+#include "coap_client.h"
 #include "protocol_examples_common.h"
+
 static const char *TAG = "user_event_loops";
+
+enum states
+{
+    INITIALIZATION,
+    CHECK_UPDATES,
+    CONNECT_COAP,
+    COAP_CONNECTED,
+};
+enum states machine_state;
+static int send_data = -1;
 
 void monitorize_handler(void *handler_arg, esp_event_base_t base, int32_t id, void *event_data)
 {
-
+    if (send_data == -1)
+        return;
     char msg[64];
-    float temp = *((float *)(event_data));
-    snprintf(msg, sizeof msg, "%f", temp);
+    float value = *((float *)(event_data));
+    snprintf(msg, sizeof msg, "%f", value);
     ESP_LOGI(TAG, "Temp %s", msg);
     switch (id)
     {
     case SENSOR_TEMP:
+
+        send_coap_message(value);
+
         ESP_LOGI(TAG, "SENSOR_TEMP %s", msg);
         break;
     case SENSOR_ECO2:
+
+        send_coap_message(value);
+
         ESP_LOGI(TAG, "SENSOR_ECO2 %s", msg);
         break;
     case SENSOR_TVOC:
-        ESP_LOGI(TAG, "SENSOR_TVOC %s", msg);
+
+        send_coap_message(value);
+
+        break;
+    default:
+        break;
+    }
+}
+
+void coap_handler(void *handler_arg, esp_event_base_t base, int32_t id, void *event_data)
+{
+    switch (id)
+    {
+    case OWN_COAP_ERROR:
+        int error = *((int *)(event_data));
+        ESP_LOGI(TAG, "COAP_ERROR %d", error);
+        break;
+    case OWN_COAP_CONNECTED:
+        ESP_LOGI(TAG, "COAP_CONNECTED");
+        machine_state = COAP_CONNECTED;
+        break;
+    case OWN_COAP_DISCONNECTED:
+        ESP_LOGI(TAG, "COAP_DISCONNECTED");
         break;
     default:
         break;
@@ -56,8 +86,26 @@ void states_machine()
 
     while (1)
     {
-        vTaskDelay(10000 / portTICK_PERIOD_MS);
-        ESP_LOGI(TAG, "Main task");
+        switch (machine_state)
+        {
+        case INITIALIZATION:
+            obtain_time();
+            machine_state = CHECK_UPDATES;
+            break;
+        case CHECK_UPDATES:
+            check_updates();
+            machine_state = CONNECT_COAP;
+            muestradora();
+            break;
+        case CONNECT_COAP:
+            connect_coap();
+            break;
+        case COAP_CONNECTED:
+            send_data = 1;
+            break;
+        default:
+            break;
+        }
     }
 }
 
@@ -70,6 +118,9 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_TEMP, monitorize_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_ECO2, monitorize_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_TVOC, monitorize_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(OWN_COAP, OWN_COAP_ERROR, coap_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(OWN_COAP, OWN_COAP_CONNECTED, coap_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(OWN_COAP, OWN_COAP_DISCONNECTED, coap_handler, NULL));
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
@@ -87,7 +138,6 @@ void app_main(void)
     };
     esp_pm_configure(&config_power_mode);
     ESP_ERROR_CHECK(err);
-    //    muestradora(1000000);
-    check_updates();
+    machine_state = INITIALIZATION;
     xTaskCreate(states_machine, "states_machine", 4096, NULL, tskIDLE_PRIORITY, NULL);
 }

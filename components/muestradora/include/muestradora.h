@@ -11,7 +11,7 @@ enum
     SENSOR_ECO2
 };
 
-void muestradora(int period);
+void muestradora();
 void muestradora_stop_timer();
 void muestradora_pause(int out);
 #endif

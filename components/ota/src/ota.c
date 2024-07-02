@@ -54,9 +54,9 @@ static const char *TAG = "OTA COMPONENT";
 extern const uint8_t server_cert_pem_start[] asm("_binary_ca_cert_pem_start");
 extern const uint8_t server_cert_pem_end[] asm("_binary_ca_cert_pem_end");
 
-#define OTA_URL_SIZE 148
+#define OTA_URL_SIZE 170
 #define OTA_URL_GET_UPDATE_VERSION_URL_SIZE 128
-
+static char img[4];
 static void _http_ota_event_handler(void *arg, esp_event_base_t event_base,
                                     int32_t event_id, void *event_data)
 {
@@ -210,7 +210,10 @@ char *compareVersion()
         .disable_auto_redirect = true,
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
-
+    if (!client)
+    {
+        return NULL;
+    }
     // GET
     esp_err_t err = esp_http_client_perform(client);
     if (err == ESP_OK)
@@ -234,15 +237,20 @@ char *compareVersion()
     version_to_compare[strlen(fw_version)] = '\0';
     strcpy(version_to_compare, fw_version);
     uint8_t cmp = get_compared_version(version_to_compare);
-    free(version_to_compare);
+
     free(atbURL);
     free(local_response_buffer);
     esp_http_client_close(client);
     esp_http_client_cleanup(client);
 
     if (cmp == 0)
+    {
+        free(version_to_compare);
         return NULL;
+    }
 
+    strcpy(img, version_to_compare);
+    free(version_to_compare);
     char *ota_url_get_version_to_update = (char *)malloc(OTA_URL_GET_UPDATE_VERSION_URL_SIZE * sizeof(char));
     sprintf(ota_url_get_version_to_update, "%s/api/v1/%s/firmware?title=%s&version=%s&size=%d&chunk=0", CONFIG_EXAMPLE_FIRMWARE_UPGRADE_URL, CONFIG_ACCESS_TOKEN, fw_title, fw_version, fw_size);
     return ota_url_get_version_to_update;
@@ -263,8 +271,8 @@ void simple_ota_example_task()
     if (!ptrUrl)
     {
         ESP_LOGI(TAG, "No hay actualizaciones");
-        vTaskDelete(NULL);
         return;
+        // vTaskDelete(NULL);
     }
     // ESP_LOGI(TAG, "url %s", ptrUrl);
     esp_http_client_config_t config_ota_prev = {0};
@@ -289,7 +297,8 @@ void simple_ota_example_task()
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG, "ESP HTTPS OTA Begin failed");
-        vTaskDelete(NULL);
+        return;
+        // vTaskDelete(NULL);
     }
 
     esp_app_desc_t app_desc;
@@ -299,18 +308,6 @@ void simple_ota_example_task()
         ESP_LOGE(TAG, "esp_https_ota_get_img_desc failed");
         goto ota_end;
     }
-
-    /*     free(ptrUrl);
-        if (ret == ESP_OK)
-        {
-            ESP_LOGI(TAG, "OTA Succeed, Rebooting...");
-            esp_restart();
-        }
-        else
-        {
-            ESP_LOGE(TAG, "Firmware upgrade failed");
-            esp_ota_mark_app_invalid_rollback_and_reboot();
-        } */
 
     while (1)
     {
@@ -336,7 +333,13 @@ void simple_ota_example_task()
         if ((err == ESP_OK) && (ota_finish_err == ESP_OK))
         {
             ESP_LOGI(TAG, "ESP_HTTPS_OTA upgrade successful. Rebooting ...");
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            ESP_ERROR_CHECK(example_disconnect());
+            free(ptrUrl);
+            if (set_version(img) != ESP_OK)
+            {
+                ESP_LOGE(TAG, "ERROR     WHILE WRITING THE NEW TAG IN ESP32 ");
+            }
+            vTaskDelay(100000 / portTICK_PERIOD_MS);
             esp_restart();
         }
         else
@@ -352,6 +355,7 @@ void simple_ota_example_task()
 
 ota_end:
     esp_https_ota_abort(https_ota_handle);
+    esp_ota_mark_app_invalid_rollback_and_reboot();
     ESP_LOGE(TAG, "ESP_HTTPS_OTA upgrade failed");
     vTaskDelete(NULL);
 }
@@ -391,4 +395,6 @@ void check_updates(void)
     get_sha256_of_partitions();
     ESP_ERROR_CHECK(example_connect());
     simple_ota_example_task();
+    ESP_LOGI(TAG, "OTA end");
+    ESP_ERROR_CHECK(example_disconnect());
 }

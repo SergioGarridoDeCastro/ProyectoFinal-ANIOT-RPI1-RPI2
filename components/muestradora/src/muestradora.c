@@ -113,15 +113,17 @@ static void temperature_every_sec(void *arg)
 {
     readTemperature(I2C_MASTER_NUM, &temperature);
     if (pause == 0)
+    {
         ESP_ERROR_CHECK(esp_event_post(SENSOR, SENSOR_TEMP, (void *)&temperature, sizeof(temperature), portMAX_DELAY));
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    sgp30_IAQ_measure(&main_sgp30_sensor);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        sgp30_IAQ_measure(&main_sgp30_sensor);
 
-    ESP_LOGI(TAG, "TVOC: %d,  eCO2: %d", (int)main_sgp30_sensor.TVOC, (int)main_sgp30_sensor.eCO2);
-    ESP_ERROR_CHECK(esp_event_post(SENSOR, SENSOR_ECO2, (void *)&main_sgp30_sensor.eCO2, sizeof(main_sgp30_sensor.eCO2), portMAX_DELAY));
-    ESP_ERROR_CHECK(esp_event_post(SENSOR, SENSOR_TVOC, (void *)&main_sgp30_sensor.TVOC, sizeof(main_sgp30_sensor.TVOC), portMAX_DELAY));
+        ESP_LOGI(TAG, "TVOC: %d,  eCO2: %d", (int)main_sgp30_sensor.TVOC, (int)main_sgp30_sensor.eCO2);
+        ESP_ERROR_CHECK(esp_event_post(SENSOR, SENSOR_ECO2, (void *)&main_sgp30_sensor.eCO2, sizeof(main_sgp30_sensor.eCO2), portMAX_DELAY));
+        ESP_ERROR_CHECK(esp_event_post(SENSOR, SENSOR_TVOC, (void *)&main_sgp30_sensor.TVOC, sizeof(main_sgp30_sensor.TVOC), portMAX_DELAY));
+    }
 }
-void muestradora(int period)
+void muestradora()
 {
 
     const esp_timer_create_args_t periodic_timer_args = {

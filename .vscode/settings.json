@@ -11,7 +11,10 @@
       "freertos.h": "c",
       "task.h": "c",
       "event_source.h": "c",
-      "protocol_examples_common.h": "c"
+      "protocol_examples_common.h": "c",
+      "time.h": "c",
+      "esp_log.h": "c",
+      "esp_attr.h": "c"
     },
     "idf.openOcdConfigs": [
       "board/esp32-wrover-kit-3.3v.cfg"
