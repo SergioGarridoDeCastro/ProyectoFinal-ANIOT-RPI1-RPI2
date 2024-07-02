@@ -27,6 +27,8 @@
 #include "mqtt_api.h"
 #include "provisionamiento.h"
 #include "wifi_station.h"
+//#include "scan_gap_ble.h"
+#include "muestradora.h"
 #include "protocol_examples_common.h"
 static const char *TAG = "user_event_loops";
 static char *DEVICE_TOKEN = NULL;
@@ -58,6 +60,8 @@ typedef enum{
 
 //El estado inicial se considera STATE_INIT
 static state_machine_t current_state = STATE_INIT;
+static int send_data = -1;
+
 
 esp_event_loop_handle_t loop_with_task;
 esp_event_loop_handle_t loop_without_task;
@@ -88,6 +92,38 @@ void monitorize_handler(void *handler_arg, esp_event_base_t base, int32_t id, vo
         break;
     }
 }*/
+
+void monitorize_handler(void *handler_arg, esp_event_base_t base, int32_t id, void *event_data)
+{
+    if (send_data == -1)
+        return;
+    char msg[64];
+    float value = *((float *)(event_data));
+    snprintf(msg, sizeof msg, "%f", value);
+    ESP_LOGI(TAG, "Temp %s", msg);
+    switch (id)
+    {
+    case SENSOR_TEMP:
+
+        publish(CONFIG_TOPIC_SENSOR_TEMP, (char *) msg);
+
+        ESP_LOGI(TAG, "SENSOR_TEMP %s", msg);
+        break;
+    case SENSOR_ECO2:
+
+        publish(CONFIG_TOPIC_SENSOR_ECO2, (char *) msg);
+
+        ESP_LOGI(TAG, "SENSOR_ECO2 %s", msg);
+        break;
+    case SENSOR_TVOC:
+
+        publish(CONFIG_TOPIC_SENSOR_TVOC, (char *) msg);
+
+        break;
+    default:
+        break;
+    }
+}
 
 //Handler para el provisionamiento
 void provisionamiento_handler(void *handler_arg, esp_event_base_t base, int32_t id, void *event_data){
@@ -218,7 +254,10 @@ void states_machine()
             break;
         case STATE_MONITORITATION:
             //double distancia = estimacion_de_aforo();
-            ESP_LOGI(TAG, "BLE iniciado correctamente");
+            //init_ble();
+            //ESP_LOGI(TAG, "BLE iniciado correctamente");
+            ESP_LOGI(TAG, "Monitorizando datos");
+            muestradora();
             current_state = STATE_TRANSMISION;
             break;
         case STATE_TRANSMISION:
@@ -236,14 +275,10 @@ void states_machine()
                 //publish_data_si7021(1,2, 3, valorSensor);
                 //publish_data_sgp30(1,2, 3, valorSensor);
                 //publish("", aforo);
+                send_data = 1;
             #else
                 ESP_LOGE(TAG, "Protocolo de transporte no soportado");
             #endif
-            current_state = STATE_LOW_POWER;
-            break;
-        case STATE_LOW_POWER:
-            break;
-        case STATE_OTA:
             break;
         default:
             break;
@@ -276,9 +311,9 @@ void app_main(void)
     // init temperature controller
     //i2c_master_init();
     ESP_ERROR_CHECK(esp_event_loop_create_default());
-    //ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_TEMP, monitorize_handler, NULL));
-    //ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_ECO2, monitorize_handler, NULL));
-    //ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_TVOC, monitorize_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_TEMP, monitorize_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_ECO2, monitorize_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(SENSOR, SENSOR_TVOC, monitorize_handler, NULL));
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
@@ -296,6 +331,7 @@ void app_main(void)
     };
     esp_pm_configure(&config_power_mode);
     ESP_ERROR_CHECK(err);
+    current_state = STATE_INIT;
     //    muestradora(1000000);
 
     
@@ -303,19 +339,5 @@ void app_main(void)
     
 
     //check_updates();
-
-
-    /*
-    #if CONFIG_USE_MQTT_PROTOCOL
-        //Iniciación MQTT. Se le pasa el handler de los eventos
-        //MQTT para que se registre.
-        init_mqtt();
-        ESP_ERROR_CHECK(err);
-        start_publisher();
-    #else
-        ESP_LOGE(TAG, "Protocolo mal configurado");
-        return;
-    #endif*/
-    
     xTaskCreate(states_machine, "states_machine", 4096, NULL, tskIDLE_PRIORITY, NULL);
 }

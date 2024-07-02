@@ -15,6 +15,24 @@ menu "MQTT Configuration"
         help
             Port of the broker to connect to
 
+    config TOPIC_SENSOR_TEMP
+        string  "Topic monitoritation"
+        default "nodo/sensor_temp"
+        help 
+            Topic del SENSOR_TEMP.
+    
+    config TOPIC_SENSOR_ECO2
+        string  "Topic monitoritation"
+        default "nodo/sensor_eco2"
+        help 
+            Topic del SENSOR_ECO2.        
+
+    config TOPIC_SENSOR_TVOC
+        string  "Topic monitoritation"
+        default "nodo/sensor_eco2"
+        help 
+            Topic del SENSOR_TVOC.  
+
     config THINGSBOARD_PROVISION_DEVICE_KEY
         string "Device key para el provisionamiento via Thingsboard."
     
