@@ -79,8 +79,19 @@ Esto es debido a que los errores que se encontraban indicaban "no se puede abrir
 
 Por otra parte se ha planteado modificar el componente MQTT con el objetivo de establecerlo como una api para utilizar MQTT y eliminar las funcionalidades relativas al provisionamiento con el objetivo de hacer el codigo más sencillo y modular.
 
+Se pkantean funciones de publicación para cada sensor, pues se han estavlecido topics diferentes. 
+Se da la opcion de utilizar TLS sobre MQTT y de establecer LWT mediante el menuconfig.
 # RPI-I
-Respecto a otros errores de compulacion se ha realizado modificaciones similares.
+Respecto a otros errores de compulacion se ha realizado modificaciones similares. Se realiza el provisionamiento con la aplicación movil SoftAP para las credenciales de la red WiFi a conectarse (SSID y password)
 
-## NOTAS
-1. En el componente MQTT se decide que los datos que recoge el sensor SGP30 se representen como CJSON y los datos que recoge el sensor Si7021 se representen como CBOR antes de publicarlos en el broker. La razon de la eleccion de CBOR en los datos del sensor Si7021 es que se considera CBOR es un formato de representación más compacto y que al recoger el sensor datos de temperatura y humedad tiene más sentido enviarlos más compactos de cara a ahorrar ancho de banda.
+Bluetooth: se ha refinado la formula hallada en https://repositorio.unican.es/xmlui/bitstream/handle/10902/19626/428600.pdf?sequence=1 pagina 11. Implementación en cliente Gatt.
+# ANIOT
+Se establece un mecanismo SNTP para actualizar el reloj del ESP32 a la hora de Madrid que se ejecutara antes de la conexion con el broker.
+# Comun
+Para la ejecución de la aplicación se establece una maquina de estados que permita el siguiente glujo:
+1. Provisionamiento app SoftAP
+2. Comexion a la red wifi con las credenciales recibidas
+3. Calibración de la hora.
+4. Establecimiento de la conexion con el broker
+5. Monitorización
+6. Publicacion de los datos monitorizados en el topic correspondiente para cada sensor
